@@ -1,4 +1,4 @@
-# metronome
+# Pendulo
 
 Metronome mobile app made in flutter.
 
