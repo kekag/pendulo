@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,7 +12,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       theme: ThemeData(
         fontFamily: 'Computer Modern',
         colorScheme: const ColorScheme.dark(),
@@ -33,10 +34,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int numBeats = 4;
   int beatDuration = 4;
+  double beatsPerMinute = 100.0;
 
-  void changeTimeSignature() {
+  void changeTimeSignature(beats, duration) {
     setState(() {
-      numBeats++;
+      numBeats = beats;
+      beatDuration = duration;
+    });
+  }
+
+  void changeBPM(bpm) {
+    setState(() {
+      beatsPerMinute = bpm;
     });
   }
 
@@ -44,24 +53,45 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text(widget.title),
       ),
       body: Center(
+        child: Container(
+          margin: EdgeInsets.all(100.0),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            shape: BoxShape.circle,
+          ),
+        )
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Time signature:',
+            RangeSlider(
+              values: RangeValues(4, 8),
+              onChanged: (newBeats) {
+                setState(() {
+                  numBeats = newBeats;
+                });
+              },
+              min: 1,
+              max: 31,
             ),
-            Text(
-              '$numBeats / $beatDuration',
-              style: Theme.of(context).textTheme.headline3,
+            RangeSlider(
+              values: RangeValues(2, 16),
+              onChanged: (newBeats) {
+                setState(() {
+                  numBeats = newBeats;
+                });
+              },
+              min: 2,
+              max: 16,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: changeTimeSignature,
+        //onPressed: changeTimeSignature,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
