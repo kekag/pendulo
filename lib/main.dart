@@ -36,10 +36,17 @@ class _MyHomePageState extends State<MyHomePage> {
   int beatDuration = 4;
   double beatsPerMinute = 100.0;
 
-  void changeTimeSignature(beats, duration) {
+  /* void changeTimeSignature(beats, duration) {
     setState(() {
       numBeats = beats;
       beatDuration = duration;
+    });
+  } */
+
+  void changeTimeSignature() {
+    setState(() {
+      numBeats++;
+      beatDuration++;
     });
   }
 
@@ -58,16 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Container(
-          margin: EdgeInsets.all(100.0),
+          margin: EdgeInsets.all(35.0),
           decoration: BoxDecoration(
             color: Colors.white10,
             shape: BoxShape.circle,
           ),
-        )
-        child: Column(
+        ),
+        /*Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            RangeSlider(
+            Text('$numBeats, $beatDuration, $beatsPerMinute'),
+            /* RangeSlider(
               values: RangeValues(4, 8),
               onChanged: (newBeats) {
                 setState(() {
@@ -86,15 +94,28 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               min: 2,
               max: 16,
-            ),
+            ), */
           ],
-        ),
+        ),*/
       ),
       floatingActionButton: FloatingActionButton(
-        //onPressed: changeTimeSignature,
-        tooltip: 'Increment',
+        onPressed: changeTimeSignature,
+        tooltip: 'Creates another meter',
         child: const Icon(Icons.add),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      )
+      /*polyrhythmButton: FloatingActionButton(
+        onPressed: changeTimeSignature,
+        tooltip: 'Creates a polyrhythm',
+        child: const Icon(Icons.add),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
+      polymeterButton: FloatingActionButton(
+        onPressed: changeTimeSignature,
+        tooltip: 'Creates a polymeter',
+        child: const Icon(Icons.add),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      )*/
     );
   }
 }
