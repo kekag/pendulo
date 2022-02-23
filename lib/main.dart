@@ -32,26 +32,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // The numerator part of the time signature, denotes
+  // the number of beats played per bar/measure.
   int numBeats = 4;
+  // The 'denominator' part, indicating the type of note
+  // being played; e.g. 4 for quarter note, 8 for eighth, etc.
   int beatDuration = 4;
+  // Tempo of the time signature.
   double beatsPerMinute = 100.0;
+  // Defines the number of meters, polyrhythm or polymeters
+  // elements being concurrently displayed.
+  int rhythmComponents = 1;
 
-  /* void changeTimeSignature(beats, duration) {
+  void modifyMetronome(beats, duration, bpm) {
     setState(() {
       numBeats = beats;
       beatDuration = duration;
-    });
-  } */
-
-  void changeTimeSignature() {
-    setState(() {
-      numBeats++;
-      beatDuration++;
-    });
-  }
-
-  void changeBPM(bpm) {
-    setState(() {
       beatsPerMinute = bpm;
     });
   }
@@ -63,59 +59,91 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Container(
-          margin: EdgeInsets.all(35.0),
-          decoration: BoxDecoration(
-            color: Colors.white10,
-            shape: BoxShape.circle,
-          ),
-        ),
-        /*Column(
+      body:
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('$numBeats, $beatDuration, $beatsPerMinute'),
-            /* RangeSlider(
-              values: RangeValues(4, 8),
-              onChanged: (newBeats) {
-                setState(() {
-                  numBeats = newBeats;
-                });
-              },
-              min: 1,
-              max: 31,
+            Center(
+              child: Container(
+                margin: EdgeInsets.all(35.0),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-            RangeSlider(
-              values: RangeValues(2, 16),
-              onChanged: (newBeats) {
-                setState(() {
-                  numBeats = newBeats;
-                });
-              },
-              min: 2,
-              max: 16,
-            ), */
+            Expanded(
+              child: ListView.builder(
+                itemCount: rhythmComponents,
+                itemBuilder: (context, index) {
+                  return new GestureDetector(
+                    onTap: () {
+                      print("tapped");
+                    },
+                    child: new Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: new Container(
+                        color: Colors.grey,
+                        height: 100.0,
+                      ),
+                    ),
+                  );
+                },
+              )
+            )
           ],
-        ),*/
+        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            bottom: 20,
+            left: 30,
+            child: FloatingActionButton(
+              onPressed: () {},
+              tooltip: 'Creates a polyrhythm',
+              child: const Icon(
+                Icons.add,
+                size: 30,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3)
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            child: FloatingActionButton(
+              onPressed: () {},
+              tooltip: 'Creates a polyrhythm',
+              child: const Icon(
+                Icons.add,
+                size: 30,
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3)
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            right: 30,
+            child: FloatingActionButton(
+              onPressed: () {},
+              tooltip: 'Creates a polymeter',
+              child: const Icon(
+                Icons.add,
+                size: 30,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3)
+              ),
+            ),
+          ),
+        ]
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: changeTimeSignature,
-        tooltip: 'Creates another meter',
-        child: const Icon(Icons.add),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-      )
-      /*polyrhythmButton: FloatingActionButton(
-        onPressed: changeTimeSignature,
-        tooltip: 'Creates a polyrhythm',
-        child: const Icon(Icons.add),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-      ),
-      polymeterButton: FloatingActionButton(
-        onPressed: changeTimeSignature,
-        tooltip: 'Creates a polymeter',
-        child: const Icon(Icons.add),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-      )*/
     );
   }
 }
