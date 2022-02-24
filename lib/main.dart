@@ -32,38 +32,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // The numerator part of the time signature, denotes
-  // the number of beats played per bar/measure.
-  int numBeats = 4;
-  // The 'denominator' part, indicating the type of note
-  // being played; e.g. 4 for quarter note, 8 for eighth, etc.
-  int beatDuration = 4;
-  // Tempo of the time signature.
-  double beatsPerMinute = 100.0;
   // Defines the number of meters, polyrhythm or polymeters
   // elements being concurrently displayed.
   int rhythmComponents = 1;
 
-  void modifyMetronome(beats, duration, bpm) {
-    setState(() {
-      numBeats = beats;
-      beatDuration = duration;
-      beatsPerMinute = bpm;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(widget.title),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          radius: 0.2,
+          colors: <Color>[
+            Color(0x151515FF),
+            Color(0x0F0F0FFF),
+          ],
+        ),
       ),
-      body:
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(widget.title),
+        ),
+        body:
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('$numBeats, $beatDuration, $beatsPerMinute'),
+            // Text('$numBeats, $beatDuration, $beatsPerMinute'),
             Center(
               child: Container(
                 margin: EdgeInsets.all(35.0),
@@ -94,56 +88,95 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            bottom: 20,
-            left: 30,
-            child: FloatingActionButton(
-              onPressed: () {},
-              tooltip: 'Creates a polyrhythm',
-              child: const Icon(
-                Icons.add,
-                size: 30,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                bottom: 6,
+                left: 18,
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  tooltip: 'Adds a regular meter click-track to the metronome suite.',
+                  child: new Column(
+                    children: [
+                      const Padding(padding: EdgeInsets.all(3.0)),
+                      const Icon(
+                        Icons.add,
+                        size: 30,
+                      ),
+                      const Text(
+                        "meter",
+                        style: TextStyle(
+                          fontSize: 10.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                ),
               ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3)
+              Positioned(
+                bottom: 6,
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  tooltip: 'Adds a polyrhythm tool to the metronome suite.',
+                  child: new Column(
+                    children: [
+                      const Padding(padding: EdgeInsets.all(1.0)),
+                      const Icon(
+                        Icons.add,
+                        size: 30,
+                      ),
+                      const Text(
+                        "poly\nrhythm",
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          height: 0.9,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                ),
               ),
-            ),
+              Positioned(
+                bottom: 6,
+                right: 18,
+                child: FloatingActionButton(
+                  onPressed: () {},
+                  tooltip: 'Adds a polymeter to the metronome suite.',
+                  child: new Column(
+                    children: [
+                      const Padding(padding: EdgeInsets.all(1.0)),
+                      const Icon(
+                        Icons.add,
+                        size: 30,
+                      ),
+                      const Text(
+                        "poly\nmeter",
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          height: 0.9,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3)
+                  ),
+                ),
+              ),
+            ]
           ),
-          Positioned(
-            bottom: 20,
-            child: FloatingActionButton(
-              onPressed: () {},
-              tooltip: 'Creates a polyrhythm',
-              child: const Icon(
-                Icons.add,
-                size: 30,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3)
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            right: 30,
-            child: FloatingActionButton(
-              onPressed: () {},
-              tooltip: 'Creates a polymeter',
-              child: const Icon(
-                Icons.add,
-                size: 30,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(3)
-              ),
-            ),
-          ),
-        ]
-      ),
+        ),
     );
   }
 }
