@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 // Base class for all shared subclass features.
@@ -35,4 +37,64 @@ class MetronomePolymeter extends Meter {
   int numBeats2 = 4;
   double beatsPerMinute2 = 100.0;
   AudioPlayer? clickTrack2;
+}
+
+// Widget for representing metronome controls and visualization.
+class MetronomeComponent extends StatefulWidget {
+  final Meter meter;
+
+  MetronomeComponent(this.meter);
+
+  @override
+  _MetronomeComponentState createState() => _MetronomeComponentState(meter);
+}
+
+// State of metronome component widgets.
+class _MetronomeComponentState extends State<MetronomeComponent>
+    with TickerProviderStateMixin {
+  Meter meter;
+
+  _MetronomeComponentState(this.meter);
+
+  Widget get dogImage {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: 256.0,
+      decoration: const BoxDecoration(
+        shape: BoxShape.rectangle,
+      ),
+    );
+  }
+
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(seconds: 10),
+    vsync: this,
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      child: Container(
+        width: 200.0,
+        height: 200.0,
+        color: Colors.green,
+        child: const Center(
+          child: Text('Whee!'),
+        ),
+      ),
+      builder: (BuildContext context, Widget? child) {
+        return Transform.rotate(
+          angle: _controller.value * 2.0 * math.pi,
+          child: child,
+        );
+      },
+    );
+  }
 }
