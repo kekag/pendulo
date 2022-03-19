@@ -5,4 +5,4 @@ Metronome mobile app made in flutter with support for polymeters, polyrhythms, a
 ## Credits
 
 Built-in metronome sounds provided by Ludwig Peter Müller (muellerwig@gmail.com), 
-licensed under"Creative Commons CC0 1.0 Universal" 
+licensed with [Creative Commons CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) 
