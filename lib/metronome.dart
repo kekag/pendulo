@@ -41,35 +41,35 @@ class MetronomePolymeter extends Meter {
 
 // Widget for representing metronome controls and visualization.
 class MetronomeComponent extends StatefulWidget {
-  final Meter meter;
+  const MetronomeComponent({ Key? key, required this.meter,
+    this.animationDuration = const Duration(milliseconds: 1666) }) : super(key: key);
 
-  MetronomeComponent(this.meter);
+  final Meter meter;
+  final Duration animationDuration;
 
   @override
-  _MetronomeComponentState createState() => _MetronomeComponentState(meter);
+  State<MetronomeComponent> createState() => _MetronomeComponentState();
 }
 
 // State of metronome component widgets.
 class _MetronomeComponentState extends State<MetronomeComponent>
     with TickerProviderStateMixin {
-  Meter meter;
+  late AnimationController _controller;
 
-  _MetronomeComponentState(this.meter);
-
-  Widget get dogImage {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      height: 256.0,
-      decoration: const BoxDecoration(
-        shape: BoxShape.rectangle,
-      ),
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this, // TickerProviderStateMixin
+      duration: widget.animationDuration,
     );
   }
 
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 10),
-    vsync: this,
-  )..repeat();
+  @override
+  void didUpdateWidget(MetronomeComponent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _controller.duration = widget.animationDuration;
+  }
 
   @override
   void dispose() {
@@ -90,8 +90,8 @@ class _MetronomeComponentState extends State<MetronomeComponent>
         ),
       ),
       builder: (BuildContext context, Widget? child) {
-        return Transform.rotate(
-          angle: _controller.value * 2.0 * math.pi,
+        return Transform.translate(
+          offset: const Offset(10.0, 0.0),
           child: child,
         );
       },

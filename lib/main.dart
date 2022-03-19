@@ -16,7 +16,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Computer Modern',
         colorScheme: const ColorScheme.dark(),
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.grey,
+        textTheme: const TextTheme(bodyText2: TextStyle(
+            fontWeight: FontWeight.w400
+        ))
       ),
       home: const MyHomePage(title: 'PENDULO'),
     );
@@ -40,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: RadialGradient(
           radius: 0.2,
           colors: <Color>[
@@ -52,34 +55,25 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text(widget.title),
+          title: Text(
+              widget.title,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
         body:
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // MetronomeMeter(),
-            Center(
-              child: Container(
-                margin: EdgeInsets.all(35.0),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
+            // MetronomeMeter();
             Expanded(
               child: ListView.builder(
                 itemCount: rhythmComponents,
                 itemBuilder: (context, index) {
-                  return new GestureDetector(
-                    onTap: () {
-                      print("tapped");
-                    },
-                    child: new Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: new Container(
-                        color: Colors.grey,
+                  return GestureDetector(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Container(
+                        color: const Color(0xBB666666),
                         height: 100.0,
                       ),
                     ),
@@ -100,14 +94,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a regular meter click-track to the metronome suite.',
-                  child: new Column(
-                    children: [
-                      const Padding(padding: EdgeInsets.all(3.0)),
-                      const Icon(
+                  child: Column(
+                    children: const [
+                      Padding(padding: EdgeInsets.all(3.0)),
+                      Icon(
                         Icons.add,
                         size: 30,
                       ),
-                      const Text(
+                      Text(
                         "meter",
                         style: TextStyle(
                           fontSize: 10.0,
@@ -125,14 +119,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a polyrhythm tool to the metronome suite.',
-                  child: new Column(
-                    children: [
-                      const Padding(padding: EdgeInsets.all(1.0)),
-                      const Icon(
+                  child: Column(
+                    children: const [
+                      Padding(padding: EdgeInsets.all(1.0)),
+                      Icon(
                         Icons.add,
                         size: 30,
                       ),
-                      const Text(
+                      Text(
                         "poly\nrhythm",
                         style: TextStyle(
                           fontSize: 10.0,
@@ -153,14 +147,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a polymeter to the metronome suite.',
-                  child: new Column(
-                    children: [
-                      const Padding(padding: EdgeInsets.all(1.0)),
-                      const Icon(
+                  child: Column(
+                    children: const [
+                      Padding(padding: EdgeInsets.all(1.0)),
+                      Icon(
                         Icons.add,
                         size: 30,
                       ),
-                      const Text(
+                      Text(
                         "poly\nmeter",
                         style: TextStyle(
                           fontSize: 10.0,
