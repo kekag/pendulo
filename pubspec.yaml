@@ -27,8 +27,8 @@ flutter:
   fonts:
     - family: Computer Modern
       fonts:
-        - asset: fonts/cmunss.ttf
-        - asset: fonts/cmunsx.ttf
+        - asset: assets/fonts/cmunss.ttf
+        - asset: assets/fonts/cmunbsr.ttf
+          weight: 400
+        - asset: assets/fonts/cmunsx.ttf
           weight: 700
-        - asset: fonts/cmunbsr.ttf
-        - asset: fonts/cmunbsr.ttf

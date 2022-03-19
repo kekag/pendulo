@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:pendulo/metronome.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // Text('$numBeats, $beatDuration, $beatsPerMinute'),
+            // MetronomeMeter(),
             Center(
               child: Container(
                 margin: EdgeInsets.all(35.0),
