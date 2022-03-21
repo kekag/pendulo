@@ -15,11 +15,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'Computer Modern',
-        colorScheme: const ColorScheme.dark(),
-        primarySwatch: Colors.grey,
-        textTheme: const TextTheme(bodyText2: TextStyle(
-            fontWeight: FontWeight.w400
-        ))
+        colorScheme: const ColorScheme.highContrastDark(),
+        primarySwatch: Colors.green,
+        textTheme: const TextTheme(
+          button: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+          )
+        )
       ),
       home: const MyHomePage(title: 'PENDULO'),
     );
@@ -43,15 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          radius: 0.2,
-          colors: <Color>[
-            Color(0x151515FF),
-            Color(0x0F0F0FFF),
-          ],
-        ),
-      ),
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -64,20 +58,12 @@ class _MyHomePageState extends State<MyHomePage> {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // MetronomeMeter();
+            const Padding(padding: EdgeInsets.all(6)),
             Expanded(
               child: ListView.builder(
                 itemCount: rhythmComponents,
                 itemBuilder: (context, index) {
-                  return GestureDetector(
-                    child: Padding(
-                      padding: const EdgeInsets.all(14.0),
-                      child: Container(
-                        color: const Color(0xBB666666),
-                        height: 100.0,
-                      ),
-                    ),
-                  );
+                  return MetronomeComponent(meter: MetronomeMeter());
                 },
               )
             )
@@ -85,91 +71,77 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: Stack(
-            fit: StackFit.expand,
-            alignment: Alignment.center,
-            children: [
-              Positioned(
-                bottom: 6,
-                left: 18,
+          fit: StackFit.expand,
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              bottom: 7,
+              left: 16,
+              child: SizedBox(
+                width: 108,
+                height: 54,
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a regular meter click-track to the metronome suite.',
+                  backgroundColor: const Color(0xcc555555),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(2)
+                  ),
                   child: Column(
                     children: const [
-                      Padding(padding: EdgeInsets.all(3.0)),
-                      Icon(
-                        Icons.add,
-                        size: 30,
-                      ),
-                      Text(
-                        "meter",
-                        style: TextStyle(
-                          fontSize: 10.0,
-                        ),
-                      ),
+                      Padding(padding: EdgeInsets.all(1)),
+                      Icon(Icons.add, size: 30, color: Colors.white),
+                      Text("METER", style: TextStyle(color: Colors.white),),
                     ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3)
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 6,
+            ),
+            Positioned(
+              bottom: 7,
+              child: SizedBox(
+                width: 108,
+                height: 54,
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a polyrhythm tool to the metronome suite.',
+                  backgroundColor: const Color(0xcc555555),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(2)
+                  ),
                   child: Column(
                     children: const [
-                      Padding(padding: EdgeInsets.all(1.0)),
-                      Icon(
-                        Icons.add,
-                        size: 30,
-                      ),
-                      Text(
-                        "poly\nrhythm",
-                        style: TextStyle(
-                          fontSize: 10.0,
-                          height: 0.9,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      Padding(padding: EdgeInsets.all(1)),
+                      Icon(Icons.add, size: 30, color: Colors.white),
+                      Text("POLYRHYTHM", style: TextStyle(color: Colors.white),),
                     ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3)
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 6,
-                right: 18,
+            ),
+            Positioned(
+              bottom: 7,
+              right: 16,
+              child: SizedBox(
+                width: 108,
+                height: 54,
                 child: FloatingActionButton(
                   onPressed: () {},
                   tooltip: 'Adds a polymeter to the metronome suite.',
+                  backgroundColor: const Color(0xcc555555),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                   child: Column(
                     children: const [
-                      Padding(padding: EdgeInsets.all(1.0)),
-                      Icon(
-                        Icons.add,
-                        size: 30,
-                      ),
-                      Text(
-                        "poly\nmeter",
-                        style: TextStyle(
-                          fontSize: 10.0,
-                          height: 0.9,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      Padding(padding: EdgeInsets.all(1)),
+                      Icon(Icons.add, size: 30, color: Colors.white),
+                      Text("POLYMETER", style: TextStyle(color: Colors.white),),
                     ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(3)
                   ),
                 ),
               ),
-            ]
+            )]
           ),
         ),
     );
