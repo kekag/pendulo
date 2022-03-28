@@ -2,18 +2,26 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+enum Subdivision {
+  quarter,
+  eighth,
+  triplet,
+  sixteenth,
+}
+
 // Base class for all shared subclass features.
 class Meter {
-  // The numerator part of the time signature, denotes
-  // the number of beats played per bar/measure.
+  // The numerator part of the time signature, denotes the number of
+  // beats played per bar/measure.
   int numBeats = 4;
-  // The 'denominator' part, indicating the type of note
-  // being played; e.g. 4 for quarter note, 8 for eighth, etc.
+  // The 'denominator' part, indicating the type of note being played;
+  // e.g. 4 for quarter note, 8 for eighth, etc.
   int beatDuration = 4;
   // Tempo of the time signature.
   double beatsPerMinute = 100.0;
-  // Modulates audio playback, contains sample and beat
-  // frequency.
+  // The durational pattern, or subdivison of the the click track.
+  Subdivision subdivision = Subdivision.triplet;
+  // Modulates audio playback, contains sample and beat frequency.
   AudioPlayer? clickTrack;
 
   Meter();
@@ -82,9 +90,12 @@ class _MetronomeVisualizerState extends State<MetronomeVisualizer>
     return AnimatedBuilder(
       animation: _controller,
       child: Container(
-        width: 200.0,
-        height: 200.0,
-        color: Colors.green,
+        width: 136.0,
+        height: 86.0,
+        decoration: BoxDecoration(
+          color: const Color(0xCC333333),
+          borderRadius: BorderRadius.circular(2)
+        ),
         child: const Center(
           child: Text('Whee!'),
         ),
@@ -138,53 +149,119 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
             borderRadius: BorderRadius.circular(2)
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: const Color(0xCC333333),
-                  borderRadius: BorderRadius.circular(2)
-                ),
-                child: Text.rich(
-                  TextSpan(
-                    children: <TextSpan>[
-                      TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
-                      TextSpan(text: convertSignature(widget.meter.beatDuration)),
-                    ],
-                    style: const TextStyle(
-                      height: 0.55,
-                      letterSpacing: -1,
-                      fontSize: 64,
-                      fontFamily: 'Bravura',
+              Positioned(
+                bottom: 0,
+                left: 0,
+                child: SizedBox(
+                  width: 52,
+                  height: 100,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      widget.meter.clickTrack?.pause();
+                    },
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(2)
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      size: 40,
+                      color: Color(0xFF404040),
                     ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
               const Padding(padding: EdgeInsets.all(6)),
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: const Color(0xCC333333),
-                  borderRadius: BorderRadius.circular(2)
-                ),
-                child: Text.rich(
-                  TextSpan(
-                    children: <TextSpan>[
-                      TextSpan(text: '\uE1D5\t=  '
-                        '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
-                    ],
-                    style: const TextStyle(
-                      height: 0.6,
-                      letterSpacing: -0.5,
-                      fontSize: 24,
-                      fontFamily: 'Bravura',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                        color: const Color(0xCC333333),
+                        borderRadius: BorderRadius.circular(2)
+                    ),
+                    child: Text.rich(
+                      TextSpan(
+                        children: <TextSpan>[
+                          TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
+                          TextSpan(text: convertSignature(widget.meter.beatDuration)),
+                        ],
+                        style: const TextStyle(
+                          height: 0.55,
+                          letterSpacing: -1,
+                          fontSize: 64,
+                          fontFamily: 'Bravura',
+                        ),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  const Padding(padding: EdgeInsets.all(5)),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 86,
+                        height: 37,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2)
+                          ),
+                          child: Text.rich(
+                            TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: '\n\uE1D5\t=  '
+                                    '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
+                              ],
+                              style: const TextStyle(
+                                height: 0.175,
+                                letterSpacing: -0.5,
+                                fontSize: 24,
+                                fontFamily: 'Bravura',
+                              ),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      const Padding(padding: EdgeInsets.all(5)),
+                      SizedBox(
+                        width: 86,
+                        height: 37,
+                        child:
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2)
+                          ),
+                          child: Text.rich(
+                            TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text:
+                                '\n${convertSubdivison(widget.meter.subdivision)}'),
+                              ],
+                              style: const TextStyle(
+                                height: 0.175,
+                                letterSpacing: -0.5,
+                                fontSize: 24,
+                                fontFamily: 'Bravura',
+                              ),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  /*MetronomeVisualizer(
+                    meter: widget.meter,
+                  ),*/
+                ],
               ),
             ],
           ),
@@ -206,4 +283,22 @@ String convertSignature(int i) {
     return String.fromCharCodes([tens, ones]);
   }
   return String.fromCharCode(0xE080 + i);
+}
+
+String convertSubdivison(Subdivision s) {
+  switch (s) {
+    case Subdivision.quarter:
+      return String.fromCharCodes([0xE1F0]);
+    case Subdivision.eighth:
+      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2]);
+    case Subdivision.triplet:
+      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2,
+        0xE1FF, 0xE1F7, 0xE1F2]);
+    case Subdivision.sixteenth:
+      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2,
+        0xE1F7, 0xE1F2, 0xE1F7, 0xE1F2]);
+    default:
+      debugPrint('unknown subdivison value: $s');
+      return "";
+  }
 }
