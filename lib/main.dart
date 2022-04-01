@@ -43,6 +43,30 @@ class _MyHomePageState extends State<MyHomePage> {
   // elements being concurrently displayed.
   int rhythmComponents = 1;
 
+  AudioPlayer audioPlayer = AudioPlayer(
+     mode: PlayerMode.LOW_LATENCY,
+  );
+  // AudioPlayer.logEnabled = true;
+  playPlayer() async {
+    audioPlayer.onPlayerError.listen((msg) {
+      print('audioPlayer error: $msg');
+    });
+    int result = await audioPlayer.play(
+      // '../assets/audio_samples/Perc_Stick_hi.wav',
+      'assets/audio_samples/hula.mp3',
+      isLocal: true,
+    );
+    if (result == 1) {
+      print('audio is playing');
+    } else {
+      print('error playing audio');
+    }
+  }
+
+  AudioCache audioCache = AudioCache(
+    prefix: 'assets/audio_samples/',
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,7 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  playPlayer();
+                },
                 tooltip: 'Adds a polyrhythm tool to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(

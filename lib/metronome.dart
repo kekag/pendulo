@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -18,14 +19,20 @@ class Meter {
   // e.g. 4 for quarter note, 8 for eighth, etc.
   int beatDuration = 4;
   // Tempo of the time signature.
-  double beatsPerMinute = 100.0;
+  double beatsPerMinute = 100;
   // The durational pattern, or subdivison of the the click track.
-  Subdivision subdivision = Subdivision.triplet;
+  Subdivision subdivision = Subdivision.quarter;
   // Modulates audio playback, contains sample and beat frequency.
-  AudioPlayer? clickTrack;
+  AudioCache? audioCache = AudioCache(
+    prefix: 'assets/audio_samples/',
+    fixedPlayer: AudioPlayer(
+        mode: PlayerMode.LOW_LATENCY
+    ),
+  );
 
   Meter();
-  Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute);
+  Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute,
+      this.subdivision);
 }
 
 // Standard meter, will not have many additional properties
@@ -36,7 +43,12 @@ class MetronomeMeter extends Meter {}
 // over the same subdivision.
 class MetronomePolyrhythm extends Meter {
   int numBeats2 = 3;
-  AudioPlayer? clickTrack2;
+  AudioCache? audioCache2 = AudioCache(
+    prefix: 'assets/audio_samples/',
+    fixedPlayer: AudioPlayer(
+      mode: PlayerMode.LOW_LATENCY
+    ),
+  );
 }
 
 // Polymeter arrangement containing two meters with varying
@@ -44,13 +56,19 @@ class MetronomePolyrhythm extends Meter {
 class MetronomePolymeter extends Meter {
   int numBeats2 = 4;
   double beatsPerMinute2 = 100.0;
-  AudioPlayer? clickTrack2;
+  AudioCache? audioCache2 = AudioCache(
+    prefix: 'assets/audio_samples/',
+    fixedPlayer: AudioPlayer(
+      mode: PlayerMode.LOW_LATENCY
+    ),
+  );
 }
 
 // Widget for visualizing the beats.
 class MetronomeVisualizer extends StatefulWidget {
   const MetronomeVisualizer({ Key? key, required this.meter,
-    this.animationDuration = const Duration(milliseconds: 1666) }) : super(key: key);
+    this.animationDuration = const Duration(milliseconds: 1666) }) :
+      super(key: key);
 
   final Meter meter;
   final Duration animationDuration;
@@ -90,10 +108,10 @@ class _MetronomeVisualizerState extends State<MetronomeVisualizer>
     return AnimatedBuilder(
       animation: _controller,
       child: Container(
-        width: 136.0,
-        height: 86.0,
+        // width: 136.0,
+        // height: 86.0,
         decoration: BoxDecoration(
-          color: const Color(0xCC333333),
+          color: const Color(0xCC202020),
           borderRadius: BorderRadius.circular(2)
         ),
         child: const Center(
@@ -125,6 +143,10 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
   @override
   void initState() {
     super.initState();
+    widget.meter.audioCache?.loadAll([
+      'Perc_Stick_hi.wav',
+      'Perc_Stick_lo.wav'
+    ]);
   }
 
   @override
@@ -137,74 +159,112 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
     super.dispose();
   }
 
+  final sample = 'Perc_Stick_hi.wav';
+
+  IconData buttonIcon = Icons.play_arrow;
+  Color buttonColor = const Color(0xDD28ED74);
+  PlayerState playerState = PlayerState.PAUSED;
+
+  void controlPlayer(AudioPlayer player) {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            color: const Color(0xCC555555),
-            borderRadius: BorderRadius.circular(2)
-          ),
-          child: Row(
-            children: [
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: SizedBox(
-                  width: 52,
-                  height: 100,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      widget.meter.clickTrack?.pause();
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(2)
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow,
-                      size: 40,
-                      color: Color(0xFF404040),
-                    ),
-                  ),
-                ),
+        child: Column(
+          children: [
+            Container(
+              height: 82,
+              decoration: BoxDecoration(
+                color: const Color(0xCC555555),
+                borderRadius: BorderRadius.circular(2)
               ),
-              const Padding(padding: EdgeInsets.all(6)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                        color: const Color(0xCC333333),
-                        borderRadius: BorderRadius.circular(2)
-                    ),
-                    child: Text.rich(
-                      TextSpan(
-                        children: <TextSpan>[
-                          TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
-                          TextSpan(text: convertSignature(widget.meter.beatDuration)),
-                        ],
-                        style: const TextStyle(
-                          height: 0.55,
-                          letterSpacing: -1,
-                          fontSize: 64,
-                          fontFamily: 'Bravura',
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: SizedBox(
+                      width: 52,
+                      height: 90,
+                      child: FloatingActionButton(
+                        onPressed: () async {
+                          /*
+                          final player = await widget.meter.audioCache?.loop(
+                              'Perc_Stick_hi.wav'
+                          );*/
+                          setState(() {
+                            if (playerState == PlayerState.PAUSED) {
+                              buttonIcon = Icons.pause;
+                              buttonColor = const Color(0xDDF0BE1A);
+                              playerState = PlayerState.PLAYING;
+                              while(playerState == PlayerState.PLAYING) {
+                                final player = widget.meter.audioCache?.play(
+                                  'Perc_Stick_hi.wav'
+                                );
+                              }
+                              // player?.play(sample);
+                            } else if (playerState == PlayerState.PLAYING) {
+                              buttonIcon = Icons.play_arrow;
+                              buttonColor = const Color(0xDD28ED74);
+                              playerState = PlayerState.PAUSED;
+                              final player = widget.meter.audioCache?.play(
+                                'empty.wav'
+                              );
+                              int result =  player?.pause();
+                            }
+                          });
+                        },
+                        backgroundColor: buttonColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(2)
+                        ),
+                        child: Icon(
+                          buttonIcon,
+                          size: 40,
+                          color: const Color(0xFF404040),
                         ),
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
-                  const Padding(padding: EdgeInsets.all(5)),
-                  Column(
+                  const Padding(padding: EdgeInsets.all(12)),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
+                        width: 62,
+                        height: 74,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2)
+                          ),
+                          child: Text.rich(
+                            TextSpan(
+                              children: <TextSpan>[
+                                TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
+                                TextSpan(text: convertSignature(widget.meter.beatDuration)),
+                              ],
+                              style: const TextStyle(
+                                height: 0.55,
+                                letterSpacing: -1,
+                                fontSize: 54,
+                                fontFamily: 'Bravura',
+                              ),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      const Padding(padding: EdgeInsets.all(5)),
+                      SizedBox(
                         width: 86,
-                        height: 37,
+                        height: 42,
                         child: Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
@@ -230,8 +290,8 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       ),
                       const Padding(padding: EdgeInsets.all(5)),
                       SizedBox(
-                        width: 86,
-                        height: 37,
+                        width: 78,
+                        height: 42,
                         child:
                         Container(
                           padding: const EdgeInsets.all(7),
@@ -258,13 +318,21 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       ),
                     ],
                   ),
-                  /*MetronomeVisualizer(
-                    meter: widget.meter,
-                  ),*/
                 ],
               ),
-            ],
-          ),
+            ),
+            Container(
+              width: 350,
+              height: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xCC222222),
+                borderRadius: BorderRadius.circular(2)
+              ),
+              child: MetronomeVisualizer(
+                meter: widget.meter,
+              ),
+            ),
+          ],
         ),
       ),
     );
