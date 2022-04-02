@@ -499,7 +499,6 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
     ).showDialog(context);
   }
 
-
   final sample = 'Perc_Stick_hi.wav';
   Color barColor = const Color(0xCC222222);
   IconData buttonIcon = Icons.play_arrow;
@@ -509,12 +508,6 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onHorizontalDragEnd: (details) {
-        if (details.velocity.pixelsPerSecond.dx > 300) {
-          buttonIcon = Icons.delete;
-          print("drag end: $details");
-        }
-      },
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -528,7 +521,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: 52,
+                    width: 44,
                     height: 90,
                     child: FloatingActionButton(
                       onPressed: () async {
@@ -551,11 +544,11 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       child: Icon(
                         buttonIcon,
                         size: 40,
-                        color: const Color(0xFF404040),
+                        color: const Color(0xFF333333),
                       ),
                     ),
                   ),
-                  const Padding(padding: EdgeInsets.all(12)),
+                  const Padding(padding: EdgeInsets.all(7)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -657,6 +650,59 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                         ),
                       ),
                     ],
+                  ),
+                  const Padding(padding: EdgeInsets.all(6.3)),
+                  SizedBox(
+                    width: 44,
+                    height: 90,
+                    child: FloatingActionButton(
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text("Delete or reset meter?"),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'CANCEL'),
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context, 'RESET');
+                                setState(() {
+                                  widget.meter.numBeats = 4;
+                                  widget.meter.beatDuration = 4;
+                                  widget.meter.beatsPerMinute = 100;
+                                  widget.meter.subdivision = Subdivision.quarter;
+                                  playerState = MetronomeState.stopped;
+                                });
+                              },
+                              child: const Text('RESET'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context, 'DELETE');
+                                if(mounted) {
+                                  print("mounted");
+                                } else {
+                                  print("unmounted");
+                                }
+                                dispose();
+                              },
+                              child: const Text('DELETE'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFF333333),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(2)
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 40,
+                        color: Color(0xDDEE2222),
+                      ),
+                    ),
                   ),
                 ],
               ),

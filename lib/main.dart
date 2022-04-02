@@ -40,6 +40,15 @@ class _MyHomePageState extends State<MyHomePage> {
   // Defines the number of meters, polyrhythm or polymeters
   // elements being concurrently displayed.
   int rhythmComponents = 1;
+  int maxComponents = 4;
+
+  addMetronomeComponent() {
+    setState(() {
+      if (rhythmComponents < maxComponents) {
+        rhythmComponents++;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const Padding(padding: EdgeInsets.all(6)),
           Expanded(
             child: ListView.builder(
-              itemCount: rhythmComponents,
+              itemCount: 5,
               itemBuilder: (context, index) {
                 return MetronomeComponent(meter: MetronomeMeter());
               },
