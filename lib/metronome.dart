@@ -1,7 +1,14 @@
 import 'dart:math' as math;
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
+
+enum MetronomeState {
+  playing,
+  stopped,
+  stopping,
+}
 
 enum Subdivision {
   quarter,
@@ -9,6 +16,277 @@ enum Subdivision {
   triplet,
   sixteenth,
 }
+
+/*
+class MetronomeControl extends StatefulWidget {
+  MetronomeControl();
+  MetronomeControlState createState() => new MetronomeControlState();
+}
+
+class MetronomeControlState extends State<MetronomeControl> {
+  final _maxRotationAngle = 0.26;
+  final _minTempo = 30;
+  final _maxTempo = 220;
+
+  List<int> _tapTimes = List();
+
+  int _tempo = 60;
+
+  bool _bobPanning = false;
+
+  MetronomeState _metronomeState = MetronomeState.stopped;
+  int _lastFrameTime=0;
+  Timer _tickTimer;
+  Timer _frameTimer;
+  int _lastEvenTick;
+  bool _lastTickWasEven;
+  int _tickInterval;
+
+  double _rotationAngle=0;
+
+  MetronomeControlState();
+
+  @override
+  void dispose() {
+    _frameTimer?.cancel();
+    _tickTimer?.cancel();
+    super.dispose();
+  }
+
+
+  void _start() {
+    _metronomeState = MetronomeState.playing;
+
+    double bps = _tempo/60;
+    _tickInterval = 1000~/bps;
+    _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
+    _tickTimer = new Timer.periodic(new Duration(milliseconds: _tickInterval), _onTick);
+    _animationLoop();
+
+    SystemSound.play(SystemSoundType.click);
+
+    if (mounted) setState((){});
+  }
+
+  void _animationLoop() {
+    _frameTimer?.cancel();
+    int thisFrameTime = DateTime.now().millisecondsSinceEpoch;
+
+    if (_metronomeState == MetronomeState.playing || _metronomeState == MetronomeState.stopping) {
+      int delay = max(0,_lastFrameTime + 17 - DateTime.now().millisecondsSinceEpoch);
+      _frameTimer = new Timer(new Duration(milliseconds: delay), ()  { _animationLoop();});
+    }
+    else {
+      _rotationAngle =0;
+    }
+    if (mounted) setState(() {});
+    _lastFrameTime = thisFrameTime;
+  }
+
+  void _onTick(Timer t) {
+    _lastTickWasEven = t.tick%2 ==0;
+    if (_lastTickWasEven) _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
+
+    if (_metronomeState == MetronomeState.playing) {
+      SystemSound.play(SystemSoundType.click);
+    }
+    else if (_metronomeState == MetronomeState.stopping) {
+      _tickTimer?.cancel();
+      _metronomeState = MetronomeState.stopped;
+    }
+  }
+
+  void _stop() {
+    _metronomeState = MetronomeState.stopping;
+    if (mounted) setState((){});
+  }
+
+
+  void _tap() {
+    if (_metronomeState != MetronomeState.stopped) return;
+    int now= DateTime.now().millisecondsSinceEpoch;
+    _tapTimes.add(now);
+    if (_tapTimes.length>3) {
+      _tapTimes.removeAt(0);
+    }
+    int tapCount=0;
+    int tapIntervalSum=0;
+
+    for (int i = _tapTimes.length-1; i>=1; i--) {
+
+      int currentTapTime = _tapTimes[i];
+      int previousTapTime = _tapTimes[i-1];
+      int currentInterval = currentTapTime - previousTapTime;
+      if (currentInterval > 3000) break;
+
+      tapIntervalSum  += currentInterval;
+      tapCount++;
+    }
+    if (tapCount>0) {
+      int msBetweenTicks = tapIntervalSum ~/ tapCount;
+      double bps = 1000/msBetweenTicks;
+      _tempo = min(max((bps * 60).toInt(), _minTempo),_maxTempo);
+    }
+    if(mounted) setState(() {});
+  }
+
+
+  double _getRotationAngle() {
+
+    double rotationAngle =0;
+    double segmentPercent;
+    double begin;
+    double end;
+    Curve curve;
+
+    int now = DateTime.now().millisecondsSinceEpoch;
+    double oscillationPercent =0;
+    if (_metronomeState == MetronomeState.playing || _metronomeState == MetronomeState.stopping) {
+      int delta = now - _lastEvenTick;
+      if (delta > _tickInterval*2) {
+        delta -= (_tickInterval*2);
+      }
+      oscillationPercent = (delta).toDouble() / (_tickInterval * 2);
+      if(oscillationPercent <0 || oscillationPercent>1) {
+        oscillationPercent = min(1,max(0,oscillationPercent));
+      }
+    }
+
+    if (oscillationPercent< 0.25) {
+      segmentPercent = oscillationPercent * 4;
+      begin =0;
+      end = _maxRotationAngle;
+      curve = Curves.easeOut;
+    }
+    else if (oscillationPercent < 0.75) {
+      segmentPercent = (oscillationPercent-0.25) * 2;
+      begin = _maxRotationAngle;
+      end = -_maxRotationAngle;
+      curve = Curves.easeInOut;
+
+    }
+    else {
+      segmentPercent = (oscillationPercent-0.75) * 4;
+      begin = -_maxRotationAngle;
+      end = 0;
+      curve = Curves.easeIn;
+    }
+
+    CurveTween curveTween = CurveTween(curve: curve);
+    double easedPercent= curveTween.transform(segmentPercent);
+
+    Tween tween = Tween<double>(begin: begin, end: end);
+    rotationAngle = tween.transform(easedPercent);
+
+    return rotationAngle;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _rotationAngle = _getRotationAngle();
+    return Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          SizedBox(height: 20),
+          Expanded(
+              child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double aspectRatio = 1.5; // height:width
+                    double width = (constraints.maxHeight >= constraints.maxWidth * aspectRatio) ? constraints.maxWidth : constraints.maxHeight / aspectRatio;
+                    double height = (constraints.maxHeight >= constraints.maxWidth * aspectRatio) ? width * aspectRatio : constraints.maxHeight;
+
+                    return _wand(width, height);
+                  }
+              )
+          ),
+          Container(height: 20),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                RaisedButton(
+                    color: Colors.purple,
+                    textColor: Colors.white,
+                    child:Text(
+                        _metronomeState == MetronomeState.stopped ? "Start" :
+                        _metronomeState == MetronomeState.stopping ? "stopping" : "Stop"),
+                    onPressed: _metronomeState == MetronomeState.stopping ? null : () {_metronomeState == MetronomeState.stopped ? _start() : _stop();}
+                ),
+                RaisedButton(
+                  color: Colors.purple,
+                  textColor: Colors.white,
+                  child:Text("Tap"),
+                  onPressed: _metronomeState == MetronomeState.stopped ? () {_tap();} : null,
+                )
+              ]
+          ),
+          SizedBox(height: 20),
+        ]
+    );
+  }
+
+  Widget _wand(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      child: GestureDetector(
+        onPanDown: (dragDownDetails) {
+          RenderBox box = context.findRenderObject();
+          Offset localPosition = box.globalToLocal(dragDownDetails.globalPosition);
+          if (_bobHitTest(width, height, localPosition)) _bobPanning=true;
+        },
+        onPanUpdate: (dragUpdateDetails) {
+          if (_bobPanning) {
+            RenderBox box = context.findRenderObject();
+            Offset localPosition = box.globalToLocal(dragUpdateDetails.globalPosition);
+            _bobDragTo(width, height, localPosition);
+          }
+        },
+        onPanEnd: (dragEndDetails) {
+          _bobPanning=false;
+        },
+        onPanCancel: () {
+          _bobPanning=false;
+        },
+
+        child: CustomPaint (
+          foregroundPainter: new MetronomeWandPainter(
+              width: width,
+              height: height,
+              tempo: _tempo,
+              minTempo: _minTempo,
+              maxTempo: _maxTempo,
+              rotationAngle: _rotationAngle
+          ),
+
+          child: InkWell(),
+        ),
+      ),
+    );
+
+  }
+  bool _bobHitTest(double width, double height, Offset localPosition) {
+    if (_metronomeState != MetronomeState.stopped) return false;
+
+    Offset translatedLocalPos = localPosition.translate(-width/2, -height * 0.75);
+    WandCoords wandCoords = WandCoords(width, height, _tempo, _minTempo, _maxTempo);
+
+    return ((translatedLocalPos.dy - wandCoords.bobCenter.dy).abs() < height/ 20);
+  }
+
+  void _bobDragTo(double width, double height, Offset localPosition) {
+    Offset translatedLocalPos = localPosition.translate(-width/2, -height * 0.75);
+    WandCoords wandCoords = WandCoords(width, height, _tempo, _minTempo, _maxTempo);
+
+    double bobPercent = (translatedLocalPos.dy - wandCoords.bobMinY) / wandCoords.bobTravel;
+    _tempo = min(_maxTempo, max(_minTempo,_minTempo + (bobPercent * (_maxTempo - _minTempo)).toInt()));
+    double bps = _tempo/60;
+    _tickInterval = 1000~/bps;
+
+    setState((){});
+  }
+}
+ */
 
 // Base class for all shared subclass features.
 class Meter {
@@ -23,12 +301,6 @@ class Meter {
   // The durational pattern, or subdivison of the the click track.
   Subdivision subdivision = Subdivision.quarter;
   // Modulates audio playback, contains sample and beat frequency.
-  AudioCache? audioCache = AudioCache(
-    prefix: 'assets/audio_samples/',
-    fixedPlayer: AudioPlayer(
-        mode: PlayerMode.LOW_LATENCY
-    ),
-  );
 
   Meter();
   Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute,
@@ -43,12 +315,6 @@ class MetronomeMeter extends Meter {}
 // over the same subdivision.
 class MetronomePolyrhythm extends Meter {
   int numBeats2 = 3;
-  AudioCache? audioCache2 = AudioCache(
-    prefix: 'assets/audio_samples/',
-    fixedPlayer: AudioPlayer(
-      mode: PlayerMode.LOW_LATENCY
-    ),
-  );
 }
 
 // Polymeter arrangement containing two meters with varying
@@ -56,12 +322,6 @@ class MetronomePolyrhythm extends Meter {
 class MetronomePolymeter extends Meter {
   int numBeats2 = 4;
   double beatsPerMinute2 = 100.0;
-  AudioCache? audioCache2 = AudioCache(
-    prefix: 'assets/audio_samples/',
-    fixedPlayer: AudioPlayer(
-      mode: PlayerMode.LOW_LATENCY
-    ),
-  );
 }
 
 // Widget for visualizing the beats.
@@ -143,10 +403,6 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
   @override
   void initState() {
     super.initState();
-    widget.meter.audioCache?.loadAll([
-      'Perc_Stick_hi.wav',
-      'Perc_Stick_lo.wav'
-    ]);
   }
 
   @override
@@ -163,11 +419,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
 
   IconData buttonIcon = Icons.play_arrow;
   Color buttonColor = const Color(0xDD28ED74);
-  PlayerState playerState = PlayerState.PAUSED;
-
-  void controlPlayer(AudioPlayer player) {
-
-  }
+  MetronomeState playerState = MetronomeState.stopped;
 
   @override
   Widget build(BuildContext context) {
@@ -192,29 +444,15 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       height: 90,
                       child: FloatingActionButton(
                         onPressed: () async {
-                          /*
-                          final player = await widget.meter.audioCache?.loop(
-                              'Perc_Stick_hi.wav'
-                          );*/
                           setState(() {
-                            if (playerState == PlayerState.PAUSED) {
+                            if (playerState == MetronomeState.stopped) {
                               buttonIcon = Icons.pause;
                               buttonColor = const Color(0xDDF0BE1A);
-                              playerState = PlayerState.PLAYING;
-                              while(playerState == PlayerState.PLAYING) {
-                                final player = widget.meter.audioCache?.play(
-                                  'Perc_Stick_hi.wav'
-                                );
-                              }
-                              // player?.play(sample);
-                            } else if (playerState == PlayerState.PLAYING) {
+                              playerState = MetronomeState.playing;
+                            } else if (playerState == MetronomeState.playing) {
                               buttonIcon = Icons.play_arrow;
                               buttonColor = const Color(0xDD28ED74);
-                              playerState = PlayerState.PAUSED;
-                              final player = widget.meter.audioCache?.play(
-                                'empty.wav'
-                              );
-                              int result =  player?.pause();
+                              playerState = MetronomeState.stopped;
                             }
                           });
                         },
@@ -322,14 +560,11 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
               ),
             ),
             Container(
-              width: 350,
-              height: 64,
+              width: MediaQuery.of(context).size.width,
+              height: 16,
               decoration: BoxDecoration(
-                color: const Color(0xCC222222),
-                borderRadius: BorderRadius.circular(2)
-              ),
-              child: MetronomeVisualizer(
-                meter: widget.meter,
+                  color: const Color(0xCC222222),
+                  borderRadius: BorderRadius.circular(2)
               ),
             ),
           ],
