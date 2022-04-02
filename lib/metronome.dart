@@ -1,21 +1,9 @@
-import 'dart:math' as math;
-import 'dart:io';
-import 'dart:async';
-import 'dart:ui';
+// import 'dart:math' as math;
+// import 'dart:io';
+import 'dart:convert';
+import 'package:pendulo/data.dart';
+import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/material.dart';
-
-enum MetronomeState {
-  playing,
-  stopped,
-  stopping,
-}
-
-enum Subdivision {
-  quarter,
-  eighth,
-  triplet,
-  sixteenth,
-}
 
 /*
 class MetronomeControl extends StatefulWidget {
@@ -297,7 +285,7 @@ class Meter {
   // e.g. 4 for quarter note, 8 for eighth, etc.
   int beatDuration = 4;
   // Tempo of the time signature.
-  double beatsPerMinute = 100;
+  int beatsPerMinute = 100;
   // The durational pattern, or subdivison of the the click track.
   Subdivision subdivision = Subdivision.quarter;
   // Modulates audio playback, contains sample and beat frequency.
@@ -321,7 +309,7 @@ class MetronomePolyrhythm extends Meter {
 // number of beats over the same duration.
 class MetronomePolymeter extends Meter {
   int numBeats2 = 4;
-  double beatsPerMinute2 = 100.0;
+  int beatsPerMinute2 = 100;
 }
 
 // Widget for visualizing the beats.
@@ -415,8 +403,104 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
     super.dispose();
   }
 
-  final sample = 'Perc_Stick_hi.wav';
+  timeSignaturePicker(BuildContext context) {
+    Picker(
+      adapter: NumberPickerAdapter(data: [
+        NumberPickerColumn(
+          initValue: widget.meter.numBeats,
+          begin: 2,
+          end: 63
+        ),
+        NumberPickerColumn(
+          initValue: widget.meter.beatDuration,
+          items: [
+            2, 4, 8, 16, 32
+          ],
+        ),
+      ]),
+      delimiter: [
+        PickerDelimiter(child: Container(
+          width: 30.0,
+          alignment: Alignment.center,
+          child: const Icon(Icons.more_vert),
+        ))
+      ],
+      hideHeader: true,
+      cancelText: 'CANCEL',
+      confirmText: 'CONFIRM',
+      title: const Text("Time signature:"),
+      onConfirm: (Picker picker, List value) {
+        setState(() {
+          widget.meter.numBeats = picker.getSelectedValues()[0];
+          widget.meter.beatDuration = picker.getSelectedValues()[1];
+        });
+      }
+    ).showDialog(context);
+  }
 
+  tempoPicker(BuildContext context) {
+    Picker(
+      adapter: NumberPickerAdapter(data: [
+        NumberPickerColumn(
+          initValue: widget.meter.beatsPerMinute,
+          jump: 5,
+          begin: 30,
+          end: 300
+        ),
+      ]),
+      hideHeader: true,
+      cancelText: 'CANCEL',
+      confirmText: 'CONFIRM',
+      title: const Text("Beats per minute:"),
+      onConfirm: (Picker picker, List value) {
+        setState(() {
+          widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
+        });
+      }
+    ).showDialog(context);
+  }
+
+  subdivisionPicker(BuildContext context) {
+    Picker(
+      selecteds: <int>[
+        widget.meter.subdivision.index,
+      ],
+      adapter: PickerDataAdapter<String>(
+        pickerdata: <String>[
+          'Quarter notes',
+          'Eighth notes',
+          'Triplets',
+          'Sixteenth notes',
+        ]
+      ),
+      hideHeader: true,
+      cancelText: 'CANCEL',
+      confirmText: 'CONFIRM',
+      title: const Text("Durational pattern:"),
+      onConfirm: (Picker picker, List value) {
+        setState(() {
+          String s = picker.getSelectedValues()[0];
+          switch (s) {
+            case 'Quarter notes':
+              widget.meter.subdivision = Subdivision.quarter;
+              break;
+            case 'Eighth notes':
+              widget.meter.subdivision = Subdivision.eighth;
+              break;
+            case 'Triplets':
+              widget.meter.subdivision = Subdivision.triplet;
+              break;
+            case 'Sixteenth notes':
+              widget.meter.subdivision = Subdivision.sixteenth;
+              break;
+          }
+        });
+      }
+    ).showDialog(context);
+  }
+
+  final sample = 'Perc_Stick_hi.wav';
+  Color barColor = const Color(0xCC222222);
   IconData buttonIcon = Icons.play_arrow;
   Color buttonColor = const Color(0xDD28ED74);
   MetronomeState playerState = MetronomeState.stopped;
@@ -436,35 +520,31 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
               ),
               child: Row(
                 children: [
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    child: SizedBox(
-                      width: 52,
-                      height: 90,
-                      child: FloatingActionButton(
-                        onPressed: () async {
-                          setState(() {
-                            if (playerState == MetronomeState.stopped) {
-                              buttonIcon = Icons.pause;
-                              buttonColor = const Color(0xDDF0BE1A);
-                              playerState = MetronomeState.playing;
-                            } else if (playerState == MetronomeState.playing) {
-                              buttonIcon = Icons.play_arrow;
-                              buttonColor = const Color(0xDD28ED74);
-                              playerState = MetronomeState.stopped;
-                            }
-                          });
-                        },
-                        backgroundColor: buttonColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(2)
-                        ),
-                        child: Icon(
-                          buttonIcon,
-                          size: 40,
-                          color: const Color(0xFF404040),
-                        ),
+                  SizedBox(
+                    width: 52,
+                    height: 90,
+                    child: FloatingActionButton(
+                      onPressed: () async {
+                        setState(() {
+                          if (playerState == MetronomeState.stopped) {
+                            buttonIcon = Icons.pause;
+                            buttonColor = const Color(0xDDF0BE1A);
+                            playerState = MetronomeState.playing;
+                          } else if (playerState == MetronomeState.playing) {
+                            buttonIcon = Icons.play_arrow;
+                            buttonColor = const Color(0xDD28ED74);
+                            playerState = MetronomeState.stopped;
+                          }
+                        });
+                      },
+                      backgroundColor: buttonColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(2)
+                      ),
+                      child: Icon(
+                        buttonIcon,
+                        size: 40,
+                        color: const Color(0xFF404040),
                       ),
                     ),
                   ),
@@ -473,84 +553,99 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 62,
-                        height: 74,
-                        child: Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
+                      GestureDetector(
+                        onTap: () {
+                          timeSignaturePicker(context);
+                        },
+                        child: SizedBox(
+                          width: 62,
+                          height: 74,
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
                               color: const Color(0xCC333333),
                               borderRadius: BorderRadius.circular(2)
-                          ),
-                          child: Text.rich(
-                            TextSpan(
-                              children: <TextSpan>[
-                                TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
-                                TextSpan(text: convertSignature(widget.meter.beatDuration)),
-                              ],
-                              style: const TextStyle(
-                                height: 0.55,
-                                letterSpacing: -1,
-                                fontSize: 54,
-                                fontFamily: 'Bravura',
-                              ),
                             ),
-                            textAlign: TextAlign.center,
+                            child: Text.rich(
+                              TextSpan(
+                                children: <TextSpan>[
+                                  TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
+                                  TextSpan(text: convertSignature(widget.meter.beatDuration)),
+                                ],
+                                style: const TextStyle(
+                                  height: 0.55,
+                                  letterSpacing: -1,
+                                  fontSize: 54,
+                                  fontFamily: 'Bravura',
+                                ),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
                       const Padding(padding: EdgeInsets.all(5)),
-                      SizedBox(
-                        width: 86,
-                        height: 42,
-                        child: Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
+                      GestureDetector(
+                        onTap: () {
+                          tempoPicker(context);
+                        },
+                        child: SizedBox(
+                          width: 86,
+                          height: 42,
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
                               color: const Color(0xCC333333),
                               borderRadius: BorderRadius.circular(2)
-                          ),
-                          child: Text.rich(
-                            TextSpan(
-                              children: <TextSpan>[
-                                TextSpan(text: '\n\uE1D5\t=  '
+                            ),
+                            child: Text.rich(
+                              TextSpan(
+                                children: <TextSpan>[
+                                  TextSpan(text: '\n\uE1D5\t=  '
                                     '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
-                              ],
-                              style: const TextStyle(
-                                height: 0.175,
-                                letterSpacing: -0.5,
-                                fontSize: 24,
-                                fontFamily: 'Bravura',
+                                ],
+                                style: const TextStyle(
+                                  height: 0.175,
+                                  letterSpacing: -0.5,
+                                  fontSize: 24,
+                                  fontFamily: 'Bravura',
+                                ),
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
                       const Padding(padding: EdgeInsets.all(5)),
-                      SizedBox(
-                        width: 78,
-                        height: 42,
-                        child:
-                        Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
+                      GestureDetector(
+                        onTap: () {
+                          subdivisionPicker(context);
+                        },
+                        child: SizedBox(
+                          width: 78,
+                          height: 42,
+                          child:
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
                               color: const Color(0xCC333333),
                               borderRadius: BorderRadius.circular(2)
-                          ),
-                          child: Text.rich(
-                            TextSpan(
-                              children: <TextSpan>[
-                                TextSpan(text:
-                                '\n${convertSubdivison(widget.meter.subdivision)}'),
-                              ],
-                              style: const TextStyle(
-                                height: 0.175,
-                                letterSpacing: -0.5,
-                                fontSize: 24,
-                                fontFamily: 'Bravura',
-                              ),
                             ),
-                            textAlign: TextAlign.center,
+                            child: Text.rich(
+                              TextSpan(
+                                children: <TextSpan>[
+                                  TextSpan(text:
+                                  '\n${convertSubdivison(widget.meter.subdivision)}'),
+                                ],
+                                style: const TextStyle(
+                                  height: 0.175,
+                                  letterSpacing: -0.5,
+                                  fontSize: 24,
+                                  fontFamily: 'Bravura',
+                                ),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -563,8 +658,8 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
               width: MediaQuery.of(context).size.width,
               height: 16,
               decoration: BoxDecoration(
-                  color: const Color(0xCC222222),
-                  borderRadius: BorderRadius.circular(2)
+                color: barColor,
+                borderRadius: BorderRadius.circular(2)
               ),
             ),
           ],

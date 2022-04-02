@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:pendulo/metronome.dart';
 
 void main() {
@@ -83,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Adds a regular meter click-track to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(2)
+                  borderRadius: BorderRadius.circular(2)
                 ),
                 child: Column(
                   children: const [
@@ -105,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Adds a polyrhythm tool to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(2)
+                  borderRadius: BorderRadius.circular(2)
                 ),
                 child: Column(
                   children: const [

@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  numberpicker: ^2.1.1
+  flutter_picker:
+    git: https://github.com/yangyxd/flutter_picker.git
 
 dev_dependencies:
   flutter_test:
