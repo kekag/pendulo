@@ -499,6 +499,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
     ).showDialog(context);
   }
 
+
   final sample = 'Perc_Stick_hi.wav';
   Color barColor = const Color(0xCC222222);
   IconData buttonIcon = Icons.play_arrow;
@@ -508,6 +509,12 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.velocity.pixelsPerSecond.dx > 300) {
+          buttonIcon = Icons.delete;
+          print("drag end: $details");
+        }
+      },
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
