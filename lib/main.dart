@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pendulo/data.dart';
 import 'package:pendulo/metronome.dart';
 
 void main() {
@@ -37,16 +38,36 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Defines the number of meters, polyrhythm or polymeters
+  // Defines the maximum number of meters, polyrhythm or polymeters
   // elements being concurrently displayed.
-  int rhythmComponents = 1;
-  int maxComponents = 4;
+  final maxComponents = 5;
+  var components = <Widget>[
+    MetronomeComponent(meter: MetronomeMeter()),
+  ];
 
-  addMetronomeComponent() {
+  addComponent(ComponentType t) {
     setState(() {
-      if (rhythmComponents < maxComponents) {
-        rhythmComponents++;
+      if (components.length < maxComponents) {
+        switch (t) {
+          case ComponentType.meter:
+            components.add(MetronomeComponent(meter: MetronomeMeter()));
+            break;
+          case ComponentType.polyrhythm:
+            components.add(MetronomeComponent(meter: MetronomePolyrhythm()));
+            break;
+          case ComponentType.polymeter:
+            components.add(MetronomeComponent(meter: MetronomePolymeter()));
+            break;
+          default:
+            debugPrint('unknown component type: $t');
+        }
       }
+    });
+  }
+
+  deleteComponent() {
+    setState(() {
+
     });
   }
 
@@ -56,21 +77,18 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-            widget.title,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+          widget.title,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
-      body:
-      Column(
+      body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          const Padding(padding: EdgeInsets.all(6)),
+          const Padding(padding: EdgeInsets.all(5)),
           Expanded(
-            child: ListView.builder(
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                return MetronomeComponent(meter: MetronomeMeter());
-              },
+            child: ListView(
+              padding: const EdgeInsets.all(5),
+              children: components,
             )
           )
         ],

@@ -569,8 +569,10 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                             child: Text.rich(
                               TextSpan(
                                 children: <TextSpan>[
-                                  TextSpan(text: '${convertSignature(widget.meter.numBeats)}\n'),
-                                  TextSpan(text: convertSignature(widget.meter.beatDuration)),
+                                  TextSpan(text:
+                                  '${convertSignature(widget.meter.numBeats)}\n'),
+                                  TextSpan(text:
+                                  convertSignature(widget.meter.beatDuration)),
                                 ],
                                 style: const TextStyle(
                                   height: 0.55,

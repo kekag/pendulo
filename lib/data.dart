@@ -1,3 +1,9 @@
+enum ComponentType {
+  meter,
+  polyrhythm,
+  polymeter,
+}
+
 enum MetronomeState {
   playing,
   stopped,
@@ -10,16 +16,3 @@ enum Subdivision {
   triplet,
   sixteenth,
 }
-
-const pickerData = '''
-[
-    {
-        [
-            1,
-            2,
-            3,
-            4
-        ]
-    }
-]
-    ''';
