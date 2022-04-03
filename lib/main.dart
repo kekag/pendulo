@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const Padding(padding: EdgeInsets.all(6)),
           Expanded(
             child: ListView.builder(
-              itemCount: 5,
+              itemCount: 4,
               itemBuilder: (context, index) {
                 return MetronomeComponent(meter: MetronomeMeter());
               },
