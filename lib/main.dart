@@ -40,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // Defines the maximum number of meters, polyrhythm or polymeters
   // elements being concurrently displayed.
-  final maxComponents = 5;
+  final maxComponents = 4;
   var components = <Widget>[
     MetronomeComponent(meter: MetronomeMeter()),
   ];
@@ -62,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
             debugPrint('unknown component type: $t');
         }
       }
+      print('components: $components');
     });
   }
 
@@ -82,16 +83,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
+          const Padding(padding: EdgeInsets.all(8)),
+        ] + components,
+        /*children: <Widget>[
           const Padding(padding: EdgeInsets.all(5)),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(5),
+              // padding: const EdgeInsets.all(5),
               children: components,
             )
           )
-        ],
+        ],*/
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Stack(
@@ -105,7 +108,9 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  addComponent(ComponentType.meter);
+                },
                 tooltip: 'Adds a regular meter click-track to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
@@ -127,7 +132,9 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  addComponent(ComponentType.polyrhythm);
+                },
                 tooltip: 'Adds a polyrhythm tool to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
@@ -150,7 +157,9 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  addComponent(ComponentType.polymeter);
+                },
                 tooltip: 'Adds a polymeter to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(

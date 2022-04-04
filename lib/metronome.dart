@@ -1,22 +1,25 @@
-// import 'dart:math' as math;
-// import 'dart:io';
+import 'dart:math' as math;
+import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:pendulo/data.dart';
 import 'package:flutter_picker/flutter_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 /*
 class MetronomeControl extends StatefulWidget {
-  MetronomeControl();
-  MetronomeControlState createState() => new MetronomeControlState();
+  const MetronomeControl({ Key? key }) : super(key: key);
+
+  @override
+  State<MetronomeControl> createState() => _MetronomeControlState();
 }
 
-class MetronomeControlState extends State<MetronomeControl> {
-  final _maxRotationAngle = 0.26;
+class _MetronomeControlState extends State<MetronomeControl> {
   final _minTempo = 30;
-  final _maxTempo = 220;
+  final _maxTempo = 300;
 
-  List<int> _tapTimes = List();
+  final _tapTimes = <int>[];
 
   int _tempo = 60;
 
@@ -24,15 +27,15 @@ class MetronomeControlState extends State<MetronomeControl> {
 
   MetronomeState _metronomeState = MetronomeState.stopped;
   int _lastFrameTime=0;
-  Timer _tickTimer;
-  Timer _frameTimer;
-  int _lastEvenTick;
-  bool _lastTickWasEven;
-  int _tickInterval;
+  Timer? _tickTimer;
+  Timer? _frameTimer;
+  int? _lastEvenTick;
+  bool? _lastTickWasEven;
+  int? _tickInterval;
 
   double _rotationAngle=0;
 
-  MetronomeControlState();
+  _MetronomeControlState();
 
   @override
   void dispose() {
@@ -41,14 +44,13 @@ class MetronomeControlState extends State<MetronomeControl> {
     super.dispose();
   }
 
-
   void _start() {
     _metronomeState = MetronomeState.playing;
 
     double bps = _tempo/60;
     _tickInterval = 1000~/bps;
     _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
-    _tickTimer = new Timer.periodic(new Duration(milliseconds: _tickInterval), _onTick);
+    _tickTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onTick);
     _animationLoop();
 
     SystemSound.play(SystemSoundType.click);
@@ -61,18 +63,18 @@ class MetronomeControlState extends State<MetronomeControl> {
     int thisFrameTime = DateTime.now().millisecondsSinceEpoch;
 
     if (_metronomeState == MetronomeState.playing || _metronomeState == MetronomeState.stopping) {
-      int delay = max(0,_lastFrameTime + 17 - DateTime.now().millisecondsSinceEpoch);
-      _frameTimer = new Timer(new Duration(milliseconds: delay), ()  { _animationLoop();});
+      int delay = math.max(0,_lastFrameTime + 17 - DateTime.now().millisecondsSinceEpoch);
+      _frameTimer = Timer(Duration(milliseconds: delay), () { _animationLoop();});
     }
     else {
-      _rotationAngle =0;
+      _rotationAngle = 0;
     }
     if (mounted) setState(() {});
     _lastFrameTime = thisFrameTime;
   }
 
   void _onTick(Timer t) {
-    _lastTickWasEven = t.tick%2 ==0;
+    _lastTickWasEven = t.tick%2 == 0;
     if (_lastTickWasEven) _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
 
     if (_metronomeState == MetronomeState.playing) {
@@ -89,16 +91,15 @@ class MetronomeControlState extends State<MetronomeControl> {
     if (mounted) setState((){});
   }
 
-
   void _tap() {
     if (_metronomeState != MetronomeState.stopped) return;
     int now= DateTime.now().millisecondsSinceEpoch;
     _tapTimes.add(now);
-    if (_tapTimes.length>3) {
+    if (_tapTimes.length > 3) {
       _tapTimes.removeAt(0);
     }
-    int tapCount=0;
-    int tapIntervalSum=0;
+    int tapCount = 0;
+    int tapIntervalSum = 0;
 
     for (int i = _tapTimes.length-1; i>=1; i--) {
 
@@ -107,20 +108,18 @@ class MetronomeControlState extends State<MetronomeControl> {
       int currentInterval = currentTapTime - previousTapTime;
       if (currentInterval > 3000) break;
 
-      tapIntervalSum  += currentInterval;
+      tapIntervalSum += currentInterval;
       tapCount++;
     }
-    if (tapCount>0) {
+    if (tapCount > 0) {
       int msBetweenTicks = tapIntervalSum ~/ tapCount;
       double bps = 1000/msBetweenTicks;
-      _tempo = min(max((bps * 60).toInt(), _minTempo),_maxTempo);
+      _tempo = math.min(math.max((bps * 60).toInt(), _minTempo),_maxTempo);
     }
     if(mounted) setState(() {});
   }
 
-
   double _getRotationAngle() {
-
     double rotationAngle =0;
     double segmentPercent;
     double begin;
@@ -135,26 +134,26 @@ class MetronomeControlState extends State<MetronomeControl> {
         delta -= (_tickInterval*2);
       }
       oscillationPercent = (delta).toDouble() / (_tickInterval * 2);
-      if(oscillationPercent <0 || oscillationPercent>1) {
-        oscillationPercent = min(1,max(0,oscillationPercent));
+      if(oscillationPercent < 0 || oscillationPercent > 1) {
+        oscillationPercent = math.min(1, math.max(0, oscillationPercent));
       }
     }
 
     if (oscillationPercent< 0.25) {
       segmentPercent = oscillationPercent * 4;
-      begin =0;
+      begin = 0;
       end = _maxRotationAngle;
       curve = Curves.easeOut;
     }
     else if (oscillationPercent < 0.75) {
-      segmentPercent = (oscillationPercent-0.25) * 2;
+      segmentPercent = (oscillationPercent - 0.25) * 2;
       begin = _maxRotationAngle;
       end = -_maxRotationAngle;
       curve = Curves.easeInOut;
 
     }
     else {
-      segmentPercent = (oscillationPercent-0.75) * 4;
+      segmentPercent = (oscillationPercent - 0.75) * 4;
       begin = -_maxRotationAngle;
       end = 0;
       curve = Curves.easeIn;
@@ -173,43 +172,45 @@ class MetronomeControlState extends State<MetronomeControl> {
   Widget build(BuildContext context) {
     _rotationAngle = _getRotationAngle();
     return Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          SizedBox(height: 20),
-          Expanded(
-              child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    double aspectRatio = 1.5; // height:width
-                    double width = (constraints.maxHeight >= constraints.maxWidth * aspectRatio) ? constraints.maxWidth : constraints.maxHeight / aspectRatio;
-                    double height = (constraints.maxHeight >= constraints.maxWidth * aspectRatio) ? width * aspectRatio : constraints.maxHeight;
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SizedBox(height: 20),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double aspectRatio = 1.5; // height:width
+              double width = (constraints.maxHeight >= constraints.maxWidth * aspectRatio)
+                ? constraints.maxWidth : constraints.maxHeight / aspectRatio;
+              double height = (constraints.maxHeight >= constraints.maxWidth * aspectRatio)
+                ? width * aspectRatio : constraints.maxHeight;
 
-                    return _wand(width, height);
-                  }
-              )
-          ),
-          Container(height: 20),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                RaisedButton(
-                    color: Colors.purple,
-                    textColor: Colors.white,
-                    child:Text(
-                        _metronomeState == MetronomeState.stopped ? "Start" :
-                        _metronomeState == MetronomeState.stopping ? "stopping" : "Stop"),
-                    onPressed: _metronomeState == MetronomeState.stopping ? null : () {_metronomeState == MetronomeState.stopped ? _start() : _stop();}
-                ),
-                RaisedButton(
-                  color: Colors.purple,
-                  textColor: Colors.white,
-                  child:Text("Tap"),
-                  onPressed: _metronomeState == MetronomeState.stopped ? () {_tap();} : null,
-                )
-              ]
-          ),
-          SizedBox(height: 20),
-        ]
+              return _wand(width, height);
+            }
+          )
+        ),
+        Container(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            RaisedButton(
+              color: Colors.purple,
+              textColor: Colors.white,
+              child:Text(
+                  _metronomeState == MetronomeState.stopped ? "Start" :
+                  _metronomeState == MetronomeState.stopping ? "stopping" : "Stop"),
+              onPressed: _metronomeState == MetronomeState.stopping ? null : () {_metronomeState == MetronomeState.stopped ? _start() : _stop();}
+            ),
+            RaisedButton(
+              color: Colors.purple,
+              textColor: Colors.white,
+              child:Text("Tap"),
+              onPressed: _metronomeState == MetronomeState.stopped ? () {_tap();} : null,
+            )
+          ]
+        ),
+        SizedBox(height: 20),
+      ]
     );
   }
 
@@ -231,47 +232,26 @@ class MetronomeControlState extends State<MetronomeControl> {
           }
         },
         onPanEnd: (dragEndDetails) {
-          _bobPanning=false;
+          _bobPanning = false;
         },
         onPanCancel: () {
-          _bobPanning=false;
+          _bobPanning = false;
         },
 
         child: CustomPaint (
-          foregroundPainter: new MetronomeWandPainter(
-              width: width,
-              height: height,
-              tempo: _tempo,
-              minTempo: _minTempo,
-              maxTempo: _maxTempo,
-              rotationAngle: _rotationAngle
+          foregroundPainter: MetronomeWandPainter(
+            width: width,
+            height: height,
+            tempo: _tempo,
+            minTempo: _minTempo,
+            maxTempo: _maxTempo,
+            rotationAngle: _rotationAngle
           ),
 
           child: InkWell(),
         ),
       ),
     );
-
-  }
-  bool _bobHitTest(double width, double height, Offset localPosition) {
-    if (_metronomeState != MetronomeState.stopped) return false;
-
-    Offset translatedLocalPos = localPosition.translate(-width/2, -height * 0.75);
-    WandCoords wandCoords = WandCoords(width, height, _tempo, _minTempo, _maxTempo);
-
-    return ((translatedLocalPos.dy - wandCoords.bobCenter.dy).abs() < height/ 20);
-  }
-
-  void _bobDragTo(double width, double height, Offset localPosition) {
-    Offset translatedLocalPos = localPosition.translate(-width/2, -height * 0.75);
-    WandCoords wandCoords = WandCoords(width, height, _tempo, _minTempo, _maxTempo);
-
-    double bobPercent = (translatedLocalPos.dy - wandCoords.bobMinY) / wandCoords.bobTravel;
-    _tempo = min(_maxTempo, max(_minTempo,_minTempo + (bobPercent * (_maxTempo - _minTempo)).toInt()));
-    double bps = _tempo/60;
-    _tickInterval = 1000~/bps;
-
-    setState((){});
   }
 }
  */
