@@ -7,15 +7,14 @@ import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
-/*
-class MetronomeControl extends StatefulWidget {
-  const MetronomeControl({ Key? key }) : super(key: key);
+class MetronomeBar extends StatefulWidget {
+  const MetronomeBar({ Key? key }) : super(key: key);
 
   @override
-  State<MetronomeControl> createState() => _MetronomeControlState();
+  State<MetronomeBar> createState() => _MetronomeBarState();
 }
 
-class _MetronomeControlState extends State<MetronomeControl> {
+class _MetronomeBarState extends State<MetronomeBar> {
   final _minTempo = 30;
   final _maxTempo = 300;
 
@@ -23,19 +22,15 @@ class _MetronomeControlState extends State<MetronomeControl> {
 
   int _tempo = 60;
 
-  bool _bobPanning = false;
-
   MetronomeState _metronomeState = MetronomeState.stopped;
-  int _lastFrameTime=0;
+  int lastFrameTime = 0;
   Timer? _tickTimer;
   Timer? _frameTimer;
-  int? _lastEvenTick;
-  bool? _lastTickWasEven;
-  int? _tickInterval;
+  int _lastEvenTick = 0;
+  bool _lastTickWasEven = false;
+  int _tickInterval = 16;
 
-  double _rotationAngle=0;
-
-  _MetronomeControlState();
+  _MetronomeBarState();
 
   @override
   void dispose() {
@@ -47,30 +42,15 @@ class _MetronomeControlState extends State<MetronomeControl> {
   void _start() {
     _metronomeState = MetronomeState.playing;
 
-    double bps = _tempo/60;
-    _tickInterval = 1000~/bps;
+    double bps = _tempo / 60;
+    _tickInterval = 1000 ~/ bps;
     _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
     _tickTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onTick);
-    _animationLoop();
+    // _animationLoop();
 
     SystemSound.play(SystemSoundType.click);
 
     if (mounted) setState((){});
-  }
-
-  void _animationLoop() {
-    _frameTimer?.cancel();
-    int thisFrameTime = DateTime.now().millisecondsSinceEpoch;
-
-    if (_metronomeState == MetronomeState.playing || _metronomeState == MetronomeState.stopping) {
-      int delay = math.max(0,_lastFrameTime + 17 - DateTime.now().millisecondsSinceEpoch);
-      _frameTimer = Timer(Duration(milliseconds: delay), () { _animationLoop();});
-    }
-    else {
-      _rotationAngle = 0;
-    }
-    if (mounted) setState(() {});
-    _lastFrameTime = thisFrameTime;
   }
 
   void _onTick(Timer t) {
@@ -92,7 +72,9 @@ class _MetronomeControlState extends State<MetronomeControl> {
   }
 
   void _tap() {
-    if (_metronomeState != MetronomeState.stopped) return;
+    if (_metronomeState != MetronomeState.stopped) {
+      return;
+    }
     int now= DateTime.now().millisecondsSinceEpoch;
     _tapTimes.add(now);
     if (_tapTimes.length > 3) {
@@ -101,8 +83,7 @@ class _MetronomeControlState extends State<MetronomeControl> {
     int tapCount = 0;
     int tapIntervalSum = 0;
 
-    for (int i = _tapTimes.length-1; i>=1; i--) {
-
+    for (int i = _tapTimes.length-1; i >= 1; i--) {
       int currentTapTime = _tapTimes[i];
       int previousTapTime = _tapTimes[i-1];
       int currentInterval = currentTapTime - previousTapTime;
@@ -116,145 +97,57 @@ class _MetronomeControlState extends State<MetronomeControl> {
       double bps = 1000/msBetweenTicks;
       _tempo = math.min(math.max((bps * 60).toInt(), _minTempo),_maxTempo);
     }
-    if(mounted) setState(() {});
-  }
-
-  double _getRotationAngle() {
-    double rotationAngle =0;
-    double segmentPercent;
-    double begin;
-    double end;
-    Curve curve;
-
-    int now = DateTime.now().millisecondsSinceEpoch;
-    double oscillationPercent =0;
-    if (_metronomeState == MetronomeState.playing || _metronomeState == MetronomeState.stopping) {
-      int delta = now - _lastEvenTick;
-      if (delta > _tickInterval*2) {
-        delta -= (_tickInterval*2);
-      }
-      oscillationPercent = (delta).toDouble() / (_tickInterval * 2);
-      if(oscillationPercent < 0 || oscillationPercent > 1) {
-        oscillationPercent = math.min(1, math.max(0, oscillationPercent));
-      }
+    if(mounted) {
+      setState(() {});
     }
-
-    if (oscillationPercent< 0.25) {
-      segmentPercent = oscillationPercent * 4;
-      begin = 0;
-      end = _maxRotationAngle;
-      curve = Curves.easeOut;
-    }
-    else if (oscillationPercent < 0.75) {
-      segmentPercent = (oscillationPercent - 0.25) * 2;
-      begin = _maxRotationAngle;
-      end = -_maxRotationAngle;
-      curve = Curves.easeInOut;
-
-    }
-    else {
-      segmentPercent = (oscillationPercent - 0.75) * 4;
-      begin = -_maxRotationAngle;
-      end = 0;
-      curve = Curves.easeIn;
-    }
-
-    CurveTween curveTween = CurveTween(curve: curve);
-    double easedPercent= curveTween.transform(segmentPercent);
-
-    Tween tween = Tween<double>(begin: begin, end: end);
-    rotationAngle = tween.transform(easedPercent);
-
-    return rotationAngle;
   }
 
   @override
   Widget build(BuildContext context) {
-    _rotationAngle = _getRotationAngle();
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        SizedBox(height: 20),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              double aspectRatio = 1.5; // height:width
-              double width = (constraints.maxHeight >= constraints.maxWidth * aspectRatio)
-                ? constraints.maxWidth : constraints.maxHeight / aspectRatio;
-              double height = (constraints.maxHeight >= constraints.maxWidth * aspectRatio)
-                ? width * aspectRatio : constraints.maxHeight;
-
-              return _wand(width, height);
-            }
-          )
-        ),
-        Container(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            RaisedButton(
-              color: Colors.purple,
-              textColor: Colors.white,
-              child:Text(
-                  _metronomeState == MetronomeState.stopped ? "Start" :
-                  _metronomeState == MetronomeState.stopping ? "stopping" : "Stop"),
-              onPressed: _metronomeState == MetronomeState.stopping ? null : () {_metronomeState == MetronomeState.stopped ? _start() : _stop();}
-            ),
-            RaisedButton(
-              color: Colors.purple,
-              textColor: Colors.white,
-              child:Text("Tap"),
-              onPressed: _metronomeState == MetronomeState.stopped ? () {_tap();} : null,
-            )
-          ]
-        ),
-        SizedBox(height: 20),
-      ]
-    );
-  }
-
-  Widget _wand(double width, double height) {
     return Container(
-      width: width,
-      height: height,
-      child: GestureDetector(
-        onPanDown: (dragDownDetails) {
-          RenderBox box = context.findRenderObject();
-          Offset localPosition = box.globalToLocal(dragDownDetails.globalPosition);
-          if (_bobHitTest(width, height, localPosition)) _bobPanning=true;
-        },
-        onPanUpdate: (dragUpdateDetails) {
-          if (_bobPanning) {
-            RenderBox box = context.findRenderObject();
-            Offset localPosition = box.globalToLocal(dragUpdateDetails.globalPosition);
-            _bobDragTo(width, height, localPosition);
-          }
-        },
-        onPanEnd: (dragEndDetails) {
-          _bobPanning = false;
-        },
-        onPanCancel: () {
-          _bobPanning = false;
-        },
-
-        child: CustomPaint (
-          foregroundPainter: MetronomeWandPainter(
-            width: width,
-            height: height,
-            tempo: _tempo,
-            minTempo: _minTempo,
-            maxTempo: _maxTempo,
-            rotationAngle: _rotationAngle
-          ),
-
-          child: InkWell(),
-        ),
-      ),
+      width: MediaQuery.of(context).size.width,
+      height: 16,
+      decoration: BoxDecoration(
+          color: const Color(0xCC222222),
+          borderRadius: BorderRadius.circular(2)
+      )
     );
   }
 }
- */
+
+// Controls audio playback of the metronome
+class ClickTrack {
+  MetronomeState metronomeState = MetronomeState.stopped;
+  Timer? tickTimer;
+  Meter meter = Meter();
+  List<String> samples = [
+    'Perc_Can_hi.wav',
+    'Perc_Can_lo.wav',
+    'Perc_Clackhead_lo.wav',
+  ];
+
+  ClickTrack() {
+    double bps = meter.beatsPerMinute / 60;
+    int tickInterval = 1000 ~/ bps;
+    tickTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onTick);
+  }
+
+  ClickTrack.standard(this.metronomeState, this.meter, this.samples) {
+    double bps = meter.beatsPerMinute / 60;
+    int tickInterval = 1000 ~/ bps;
+    tickTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onTick);
+  }
+
+  void _onTick(Timer t) {
+    if (metronomeState == MetronomeState.playing) {
+      SystemSound.play(SystemSoundType.click);
+    }
+    else if (metronomeState == MetronomeState.stopping) {
+      tickTimer?.cancel();
+      metronomeState = MetronomeState.stopped;
+    }
+  }
+}
 
 // Base class for all shared subclass features.
 class Meter {
