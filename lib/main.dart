@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:soundpool/soundpool.dart';
 import 'package:pendulo/data.dart';
 import 'package:pendulo/metronome.dart';
 
@@ -42,7 +44,10 @@ class _MyHomePageState extends State<MyHomePage> {
   // elements being concurrently displayed.
   final maxComponents = 4;
   var components = <Widget>[
-    MetronomeComponent(meter: MetronomeMeter()),
+    MetronomeComponent(
+      meter: MetronomeMeter(),
+      clickTrack: ClickTrack(),
+    ),
   ];
 
   addComponent(ComponentType t) {
@@ -50,13 +55,22 @@ class _MyHomePageState extends State<MyHomePage> {
       if (components.length < maxComponents) {
         switch (t) {
           case ComponentType.meter:
-            components.add(MetronomeComponent(meter: MetronomeMeter()));
+            components.add(MetronomeComponent(
+              meter: MetronomeMeter(),
+              clickTrack: ClickTrack(),
+            ));
             break;
           case ComponentType.polyrhythm:
-            components.add(MetronomeComponent(meter: MetronomePolyrhythm()));
+            components.add(MetronomeComponent(
+              meter: MetronomePolyrhythm(),
+              clickTrack: ClickTrack(),
+            ));
             break;
           case ComponentType.polymeter:
-            components.add(MetronomeComponent(meter: MetronomePolymeter()));
+            components.add(MetronomeComponent(
+              meter: MetronomePolymeter(),
+              clickTrack: ClickTrack(),
+            ));
             break;
           default:
             debugPrint('unknown component type: $t');
@@ -67,10 +81,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   deleteComponent() {
-    setState(() {
-
-    });
+    setState(() {});
   }
+
+  Soundpool pool = Soundpool.fromOptions(
+    options: const SoundpoolOptions(maxStreams: 2),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -157,8 +173,12 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () {
-                  addComponent(ComponentType.polymeter);
+                onPressed: () async {
+                  // addComponent(ComponentType.polymeter);
+                  int soundId = await rootBundle.load("assets/audio_samples/Perc_Can_hi.wav").then((ByteData soundData) {
+                    return pool.load(soundData);
+                  });
+                  int streamId = await pool.play(soundId);
                 },
                 tooltip: 'Adds a polymeter to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),

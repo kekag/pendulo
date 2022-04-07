@@ -1,9 +1,8 @@
 import 'dart:math' as math;
-import 'dart:io';
-import 'dart:convert';
 import 'dart:async';
 import 'package:pendulo/data.dart';
 import 'package:flutter_picker/flutter_picker.dart';
+import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
@@ -141,8 +140,7 @@ class ClickTrack {
   void _onTick(Timer t) {
     if (metronomeState == MetronomeState.playing) {
       SystemSound.play(SystemSoundType.click);
-    }
-    else if (metronomeState == MetronomeState.stopping) {
+    } else if (metronomeState == MetronomeState.stopping) {
       tickTimer?.cancel();
       metronomeState = MetronomeState.stopped;
     }
@@ -165,7 +163,7 @@ class Meter {
 
   Meter();
   Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute,
-      this.subdivision);
+    this.subdivision);
 }
 
 // Standard meter, will not have many additional properties
@@ -251,9 +249,10 @@ class _MetronomeVisualizerState extends State<MetronomeVisualizer>
 
 // Widget for controlling metronome properties, audio playback, and visualization.
 class MetronomeComponent extends StatefulWidget {
-  const MetronomeComponent({ Key? key, required this.meter }) : super(key: key);
+  const MetronomeComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
 
   final Meter meter;
+  final ClickTrack clickTrack;
 
   @override
   State<MetronomeComponent> createState() => _MetronomeComponentState();
@@ -372,11 +371,9 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
     ).showDialog(context);
   }
 
-  final sample = 'Perc_Stick_hi.wav';
   Color barColor = const Color(0xCC222222);
   IconData buttonIcon = Icons.play_arrow;
   Color buttonColor = const Color(0xDD28ED74);
-  MetronomeState playerState = MetronomeState.stopped;
 
   @override
   Widget build(BuildContext context) {
@@ -399,14 +396,14 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                     child: FloatingActionButton(
                       onPressed: () async {
                         setState(() {
-                          if (playerState == MetronomeState.stopped) {
+                          if (widget.clickTrack.metronomeState == MetronomeState.stopped) {
                             buttonIcon = Icons.pause;
                             buttonColor = const Color(0xDDF0BE1A);
-                            playerState = MetronomeState.playing;
-                          } else if (playerState == MetronomeState.playing) {
+                            widget.clickTrack.metronomeState = MetronomeState.playing;
+                          } else if (widget.clickTrack.metronomeState == MetronomeState.playing) {
                             buttonIcon = Icons.play_arrow;
                             buttonColor = const Color(0xDD28ED74);
-                            playerState = MetronomeState.stopped;
+                            widget.clickTrack.metronomeState = MetronomeState.stopped;
                           }
                         });
                       },
@@ -548,7 +545,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                                   widget.meter.beatDuration = 4;
                                   widget.meter.beatsPerMinute = 100;
                                   widget.meter.subdivision = Subdivision.quarter;
-                                  playerState = MetronomeState.stopped;
+                                  widget.clickTrack.metronomeState = MetronomeState.stopped;
                                 });
                               },
                               child: const Text('RESET'),

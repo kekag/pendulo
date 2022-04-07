@@ -14,6 +14,8 @@ dependencies:
   flutter_picker:
     git: https://github.com/yangyxd/flutter_picker.git
 
+  soundpool: ^2.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
