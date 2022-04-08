@@ -117,7 +117,9 @@ class _MetronomeBarState extends State<MetronomeBar> {
 // Controls audio playback of the metronome
 class ClickTrack {
   MetronomeState metronomeState = MetronomeState.stopped;
-  Timer? tickTimer;
+  Timer? downbeatTimer;
+  Timer? beatTimer;
+  Timer? sudivisionTimer;
   Meter meter = Meter();
   List<String> samples = [
     'Perc_Can_hi.wav',
@@ -125,31 +127,56 @@ class ClickTrack {
     'Perc_Clackhead_lo.wav',
   ];
   Soundpool pool = Soundpool.fromOptions(
-    options: const SoundpoolOptions(maxStreams: 1),
+    options: const SoundpoolOptions(maxStreams: 3),
   );
 
   ClickTrack() {
     double bps = meter.beatsPerMinute / 60;
     int tickInterval = 1000 ~/ bps;
-    tickTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onTick);
+    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
   }
 
   ClickTrack.standard(this.metronomeState, this.meter, this.samples) {
     double bps = meter.beatsPerMinute / 60;
     int tickInterval = 1000 ~/ bps;
-    tickTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onTick);
+    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
   }
 
-  void _onTick(Timer t) async {
+  void _onBeat(Timer t) async {
     if (metronomeState == MetronomeState.playing) {
-      int soundId = await rootBundle.load(
-          "assets/audio_samples/Perc_Can_hi.wav").then((
+      int soundId = await rootBundle.load(samples[1]).then((
           ByteData soundData) {
         return pool.load(soundData);
       });
-      int streamId = await pool.play(soundId);
+      int _ = await pool.play(soundId);
     } else if (metronomeState == MetronomeState.stopping) {
-      tickTimer?.cancel();
+      beatTimer?.cancel();
+      metronomeState = MetronomeState.stopped;
+    }
+  }
+
+  void _onDownbeat(Timer t) async {
+    if (metronomeState == MetronomeState.playing) {
+      int soundId = await rootBundle.load(samples[0]).then((
+          ByteData soundData) {
+        return pool.load(soundData);
+      });
+      int _ = await pool.play(soundId);
+    } else if (metronomeState == MetronomeState.stopping) {
+      downbeatTimer?.cancel();
+      metronomeState = MetronomeState.stopped;
+    }
+  }
+
+  void _onSubdivision(Timer t) async {
+    if (metronomeState == MetronomeState.playing) {
+      int soundId = await rootBundle.load(samples[2]).then((
+          ByteData soundData) {
+        return pool.load(soundData);
+      });
+      int _ = await pool.play(soundId);
+    } else if (metronomeState == MetronomeState.stopping) {
+      sudivisionTimer?.cancel();
       metronomeState = MetronomeState.stopped;
     }
   }
