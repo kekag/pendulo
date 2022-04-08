@@ -124,6 +124,9 @@ class ClickTrack {
     'Perc_Can_lo.wav',
     'Perc_Clackhead_lo.wav',
   ];
+  Soundpool pool = Soundpool.fromOptions(
+    options: const SoundpoolOptions(maxStreams: 1),
+  );
 
   ClickTrack() {
     double bps = meter.beatsPerMinute / 60;
@@ -137,9 +140,14 @@ class ClickTrack {
     tickTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onTick);
   }
 
-  void _onTick(Timer t) {
+  void _onTick(Timer t) async {
     if (metronomeState == MetronomeState.playing) {
-      SystemSound.play(SystemSoundType.click);
+      int soundId = await rootBundle.load(
+          "assets/audio_samples/Perc_Can_hi.wav").then((
+          ByteData soundData) {
+        return pool.load(soundData);
+      });
+      int streamId = await pool.play(soundId);
     } else if (metronomeState == MetronomeState.stopping) {
       tickTimer?.cancel();
       metronomeState = MetronomeState.stopped;
@@ -305,6 +313,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
           widget.meter.beatDuration = picker.getSelectedValues()[1];
+          widget.clickTrack.meter = widget.meter;
         });
       }
     ).showDialog(context);
@@ -327,6 +336,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
+          widget.clickTrack.meter = widget.meter;
         });
       }
     ).showDialog(context);
@@ -355,15 +365,19 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
           switch (s) {
             case 'Quarter notes':
               widget.meter.subdivision = Subdivision.quarter;
+              widget.clickTrack.meter = widget.meter;
               break;
             case 'Eighth notes':
               widget.meter.subdivision = Subdivision.eighth;
+              widget.clickTrack.meter = widget.meter;
               break;
             case 'Triplets':
               widget.meter.subdivision = Subdivision.triplet;
+              widget.clickTrack.meter = widget.meter;
               break;
             case 'Sixteenth notes':
               widget.meter.subdivision = Subdivision.sixteenth;
+              widget.clickTrack.meter = widget.meter;
               break;
           }
         });
@@ -546,6 +560,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                                   widget.meter.beatsPerMinute = 100;
                                   widget.meter.subdivision = Subdivision.quarter;
                                   widget.clickTrack.metronomeState = MetronomeState.stopped;
+                                  widget.clickTrack.meter = widget.meter;
                                 });
                               },
                               child: const Text('RESET'),

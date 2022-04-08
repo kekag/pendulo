@@ -85,8 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Soundpool pool = Soundpool.fromOptions(
-    options: const SoundpoolOptions(maxStreams: 2),
+    options: const SoundpoolOptions(maxStreams: 1),
   );
+
+  MetronomeState metronomeState = MetronomeState.stopped;
+  int streamId = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -173,12 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 108,
               height: 54,
               child: FloatingActionButton(
-                onPressed: () async {
-                  // addComponent(ComponentType.polymeter);
-                  int soundId = await rootBundle.load("assets/audio_samples/Perc_Can_hi.wav").then((ByteData soundData) {
-                    return pool.load(soundData);
-                  });
-                  int streamId = await pool.play(soundId);
+                onPressed: () {
+                  addComponent(ComponentType.polymeter);
                 },
                 tooltip: 'Adds a polymeter to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
