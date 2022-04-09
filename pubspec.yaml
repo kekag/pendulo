@@ -24,7 +24,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/audio_samples/
+    - assets/audio/
   fonts:
     - family: Computer Modern
       fonts:

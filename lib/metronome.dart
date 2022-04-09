@@ -117,67 +117,83 @@ class _MetronomeBarState extends State<MetronomeBar> {
 // Controls audio playback of the metronome
 class ClickTrack {
   MetronomeState metronomeState = MetronomeState.stopped;
-  Timer? downbeatTimer;
-  Timer? beatTimer;
-  Timer? sudivisionTimer;
   Meter meter = Meter();
-  List<String> samples = [
-    'Perc_Can_hi.wav',
-    'Perc_Can_lo.wav',
-    'Perc_Clackhead_lo.wav',
-  ];
+  int beat = 1; // 1 <= x <= numBeats * subdivision
+  Timer? beatTimer;
   Soundpool pool = Soundpool.fromOptions(
     options: const SoundpoolOptions(maxStreams: 3),
   );
+  List<String> samples = [
+    'assets/audio/Perc_Can_hi.wav',       // Downbeat
+    'assets/audio/Perc_Can_lo.wav',       // Beat
+    'assets/audio/Perc_Clackhead_lo.wav', // Subdivison
+  ];
+  int downbeatId = 0;
+  int beatId = 0;
+  int subdivisionId = 0;
 
   ClickTrack() {
-    double bps = meter.beatsPerMinute / 60;
-    int tickInterval = 1000 ~/ bps;
+    int tickInterval = _getTickInterval(meter.beatsPerMinute);
+    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
+    _setupSoundIds();
+  }
+
+  ClickTrack.standard(this.meter, this.samples) {
+    int tickInterval = _getTickInterval(meter.beatsPerMinute);
+    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
+    _setupSoundIds();
+  }
+
+  void updateMeter(Meter meter) {
+    this.meter = meter;
+    int tickInterval = _getTickInterval(meter.beatsPerMinute);
     beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
   }
 
-  ClickTrack.standard(this.metronomeState, this.meter, this.samples) {
-    double bps = meter.beatsPerMinute / 60;
-    int tickInterval = 1000 ~/ bps;
-    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
+  int _getTickInterval(int bpm) {
+    double bps = bpm / 60;
+    return 1000 ~/ bps;
+  }
+
+  void _setupSoundIds() async {
+    downbeatId = await rootBundle.load(samples[0]).then((ByteData soundData) {
+      return pool.load(soundData);
+    });
+    beatId = await rootBundle.load(samples[1]).then((ByteData soundData) {
+      return pool.load(soundData);
+    });
+    subdivisionId = await rootBundle.load(samples[2]).then((ByteData soundData) {
+      return pool.load(soundData);
+    });
   }
 
   void _onBeat(Timer t) async {
-    if (metronomeState == MetronomeState.playing) {
-      int soundId = await rootBundle.load(samples[1]).then((
-          ByteData soundData) {
-        return pool.load(soundData);
-      });
-      int _ = await pool.play(soundId);
-    } else if (metronomeState == MetronomeState.stopping) {
-      beatTimer?.cancel();
-      metronomeState = MetronomeState.stopped;
-    }
-  }
+    switch (metronomeState) {
+      case MetronomeState.starting:
+      case MetronomeState.playing:
+        if (beat == 1) {
+          // int downbeatId1 = await rootBundle.load(samples[0]).then((ByteData soundData) {
+          //   return pool.load(soundData);
+          // });
+          int _ = await pool.play(downbeatId);
+        } else {
+          // int beatId1 = await rootBundle.load(samples[1]).then((ByteData soundData) {
+          //   return pool.load(soundData);
+          // });
+          int _ = await pool.play(beatId);
+        }
 
-  void _onDownbeat(Timer t) async {
-    if (metronomeState == MetronomeState.playing) {
-      int soundId = await rootBundle.load(samples[0]).then((
-          ByteData soundData) {
-        return pool.load(soundData);
-      });
-      int _ = await pool.play(soundId);
-    } else if (metronomeState == MetronomeState.stopping) {
-      downbeatTimer?.cancel();
-      metronomeState = MetronomeState.stopped;
-    }
-  }
-
-  void _onSubdivision(Timer t) async {
-    if (metronomeState == MetronomeState.playing) {
-      int soundId = await rootBundle.load(samples[2]).then((
-          ByteData soundData) {
-        return pool.load(soundData);
-      });
-      int _ = await pool.play(soundId);
-    } else if (metronomeState == MetronomeState.stopping) {
-      sudivisionTimer?.cancel();
-      metronomeState = MetronomeState.stopped;
+        if (beat == meter.numBeats) {
+          beat = 1;
+        } else {
+          beat++;
+        }
+        break;
+      case MetronomeState.stopping:
+        beatTimer?.cancel();
+        metronomeState = MetronomeState.stopped;
+        beat = 1;
+        break;
     }
   }
 }
@@ -340,7 +356,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
           widget.meter.beatDuration = picker.getSelectedValues()[1];
-          widget.clickTrack.meter = widget.meter;
+          widget.clickTrack.updateMeter(widget.meter);
         });
       }
     ).showDialog(context);
@@ -363,7 +379,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
-          widget.clickTrack.meter = widget.meter;
+          widget.clickTrack.updateMeter(widget.meter);
         });
       }
     ).showDialog(context);
@@ -392,21 +408,18 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
           switch (s) {
             case 'Quarter notes':
               widget.meter.subdivision = Subdivision.quarter;
-              widget.clickTrack.meter = widget.meter;
               break;
             case 'Eighth notes':
               widget.meter.subdivision = Subdivision.eighth;
-              widget.clickTrack.meter = widget.meter;
               break;
             case 'Triplets':
               widget.meter.subdivision = Subdivision.triplet;
-              widget.clickTrack.meter = widget.meter;
               break;
             case 'Sixteenth notes':
               widget.meter.subdivision = Subdivision.sixteenth;
-              widget.clickTrack.meter = widget.meter;
               break;
           }
+          widget.clickTrack.updateMeter(widget.meter);
         });
       }
     ).showDialog(context);
@@ -501,6 +514,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       GestureDetector(
                         onTap: () {
                           tempoPicker(context);
+                          widget.clickTrack.updateMeter(widget.meter);
                         },
                         child: SizedBox(
                           width: 86,
@@ -533,6 +547,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                       GestureDetector(
                         onTap: () {
                           subdivisionPicker(context);
+                          widget.clickTrack.updateMeter(widget.meter);
                         },
                         child: SizedBox(
                           width: 78,
@@ -588,6 +603,9 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                                   widget.meter.subdivision = Subdivision.quarter;
                                   widget.clickTrack.metronomeState = MetronomeState.stopped;
                                   widget.clickTrack.meter = widget.meter;
+                                  buttonIcon = Icons.play_arrow;
+                                  buttonColor = const Color(0xDD28ED74);
+                                  widget.clickTrack.metronomeState = MetronomeState.stopped;
                                 });
                               },
                               child: const Text('RESET'),
@@ -595,7 +613,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                             TextButton(
                               onPressed: () {
                                 Navigator.pop(context, 'DELETE');
-                                if(mounted) {
+                                if (mounted) {
                                   print("mounted");
                                 } else {
                                   print("unmounted");

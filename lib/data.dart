@@ -5,9 +5,10 @@ enum ComponentType {
 }
 
 enum MetronomeState {
+  starting,
   playing,
-  stopped,
   stopping,
+  stopped,
 }
 
 enum Subdivision {
