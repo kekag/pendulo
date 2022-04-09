@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:soundpool/soundpool.dart';
 import 'package:pendulo/data.dart';
@@ -44,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // elements being concurrently displayed.
   final maxComponents = 4;
   var components = <Widget>[
-    MetronomeComponent(
+    MeterComponent(
       meter: MetronomeMeter(),
       clickTrack: ClickTrack(),
     ),
@@ -55,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (components.length < maxComponents) {
         switch (t) {
           case ComponentType.meter:
-            components.add(MetronomeComponent(
+            components.add(MeterComponent(
               meter: MetronomeMeter(),
               clickTrack: ClickTrack(),
             ));
@@ -76,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
             debugPrint('unknown component type: $t');
         }
       }
-      print('components: $components');
+      debugPrint('components: $components');
     });
   }
 
@@ -139,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text("METER", style: TextStyle(color: Colors.white),),
+                    Text('METER', style: TextStyle(color: Colors.white),),
                   ],
                 ),
               ),
@@ -163,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text("POLYRHYTHM", style: TextStyle(color: Colors.white),),
+                    Text('POLYRHYTHM', style: TextStyle(color: Colors.white),),
                   ],
                 ),
               ),
@@ -188,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text("POLYMETER", style: TextStyle(color: Colors.white),),
+                    Text('POLYMETER', style: TextStyle(color: Colors.white),),
                   ],
                 ),
               ),

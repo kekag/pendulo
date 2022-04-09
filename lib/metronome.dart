@@ -1,323 +1,25 @@
-import 'dart:math' as math;
-import 'dart:async';
 import 'package:pendulo/data.dart';
 import 'package:flutter_picker/flutter_picker.dart';
-import 'package:soundpool/soundpool.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
-class MetronomeBar extends StatefulWidget {
-  const MetronomeBar({ Key? key }) : super(key: key);
-
-  @override
-  State<MetronomeBar> createState() => _MetronomeBarState();
-}
-
-class _MetronomeBarState extends State<MetronomeBar> {
-  final _minTempo = 30;
-  final _maxTempo = 300;
-
-  final _tapTimes = <int>[];
-
-  int _tempo = 60;
-
-  MetronomeState _metronomeState = MetronomeState.stopped;
-  int lastFrameTime = 0;
-  Timer? _tickTimer;
-  Timer? _frameTimer;
-  int _lastEvenTick = 0;
-  bool _lastTickWasEven = false;
-  int _tickInterval = 16;
-
-  _MetronomeBarState();
-
-  @override
-  void dispose() {
-    _frameTimer?.cancel();
-    _tickTimer?.cancel();
-    super.dispose();
-  }
-
-  void _start() {
-    _metronomeState = MetronomeState.playing;
-
-    double bps = _tempo / 60;
-    _tickInterval = 1000 ~/ bps;
-    _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
-    _tickTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onTick);
-    // _animationLoop();
-
-    SystemSound.play(SystemSoundType.click);
-
-    if (mounted) setState((){});
-  }
-
-  void _onTick(Timer t) {
-    _lastTickWasEven = t.tick%2 == 0;
-    if (_lastTickWasEven) _lastEvenTick = DateTime.now().millisecondsSinceEpoch;
-
-    if (_metronomeState == MetronomeState.playing) {
-      SystemSound.play(SystemSoundType.click);
-    }
-    else if (_metronomeState == MetronomeState.stopping) {
-      _tickTimer?.cancel();
-      _metronomeState = MetronomeState.stopped;
-    }
-  }
-
-  void _stop() {
-    _metronomeState = MetronomeState.stopping;
-    if (mounted) setState((){});
-  }
-
-  void _tap() {
-    if (_metronomeState != MetronomeState.stopped) {
-      return;
-    }
-    int now= DateTime.now().millisecondsSinceEpoch;
-    _tapTimes.add(now);
-    if (_tapTimes.length > 3) {
-      _tapTimes.removeAt(0);
-    }
-    int tapCount = 0;
-    int tapIntervalSum = 0;
-
-    for (int i = _tapTimes.length-1; i >= 1; i--) {
-      int currentTapTime = _tapTimes[i];
-      int previousTapTime = _tapTimes[i-1];
-      int currentInterval = currentTapTime - previousTapTime;
-      if (currentInterval > 3000) break;
-
-      tapIntervalSum += currentInterval;
-      tapCount++;
-    }
-    if (tapCount > 0) {
-      int msBetweenTicks = tapIntervalSum ~/ tapCount;
-      double bps = 1000/msBetweenTicks;
-      _tempo = math.min(math.max((bps * 60).toInt(), _minTempo),_maxTempo);
-    }
-    if(mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 16,
-      decoration: BoxDecoration(
-          color: const Color(0xCC222222),
-          borderRadius: BorderRadius.circular(2)
-      )
-    );
-  }
-}
-
-// Controls audio playback of the metronome
-class ClickTrack {
-  MetronomeState metronomeState = MetronomeState.stopped;
-  Meter meter = Meter();
-  int beat = 1; // 1 <= x <= numBeats * subdivision
-  Timer? beatTimer;
-  Soundpool pool = Soundpool.fromOptions(
-    options: const SoundpoolOptions(maxStreams: 3),
-  );
-  List<String> samples = [
-    'assets/audio/Perc_Can_hi.wav',       // Downbeat
-    'assets/audio/Perc_Can_lo.wav',       // Beat
-    'assets/audio/Perc_Clackhead_lo.wav', // Subdivison
-  ];
-  int downbeatId = 0;
-  int beatId = 0;
-  int subdivisionId = 0;
-
-  ClickTrack() {
-    int tickInterval = _getTickInterval(meter.beatsPerMinute);
-    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
-    _setupSoundIds();
-  }
-
-  ClickTrack.standard(this.meter, this.samples) {
-    int tickInterval = _getTickInterval(meter.beatsPerMinute);
-    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
-    _setupSoundIds();
-  }
-
-  void updateMeter(Meter meter) {
-    this.meter = meter;
-    int tickInterval = _getTickInterval(meter.beatsPerMinute);
-    beatTimer = Timer.periodic(Duration(milliseconds: tickInterval), _onBeat);
-  }
-
-  int _getTickInterval(int bpm) {
-    double bps = bpm / 60;
-    return 1000 ~/ bps;
-  }
-
-  void _setupSoundIds() async {
-    downbeatId = await rootBundle.load(samples[0]).then((ByteData soundData) {
-      return pool.load(soundData);
-    });
-    beatId = await rootBundle.load(samples[1]).then((ByteData soundData) {
-      return pool.load(soundData);
-    });
-    subdivisionId = await rootBundle.load(samples[2]).then((ByteData soundData) {
-      return pool.load(soundData);
-    });
-  }
-
-  void _onBeat(Timer t) async {
-    switch (metronomeState) {
-      case MetronomeState.starting:
-      case MetronomeState.playing:
-        if (beat == 1) {
-          // int downbeatId1 = await rootBundle.load(samples[0]).then((ByteData soundData) {
-          //   return pool.load(soundData);
-          // });
-          int _ = await pool.play(downbeatId);
-        } else {
-          // int beatId1 = await rootBundle.load(samples[1]).then((ByteData soundData) {
-          //   return pool.load(soundData);
-          // });
-          int _ = await pool.play(beatId);
-        }
-
-        if (beat == meter.numBeats) {
-          beat = 1;
-        } else {
-          beat++;
-        }
-        break;
-      case MetronomeState.stopping:
-        beatTimer?.cancel();
-        metronomeState = MetronomeState.stopped;
-        beat = 1;
-        break;
-    }
-  }
-}
-
-// Base class for all shared subclass features.
-class Meter {
-  // The numerator part of the time signature, denotes the number of
-  // beats played per bar/measure.
-  int numBeats = 4;
-  // The 'denominator' part, indicating the type of note being played;
-  // e.g. 4 for quarter note, 8 for eighth, etc.
-  int beatDuration = 4;
-  // Tempo of the time signature.
-  int beatsPerMinute = 100;
-  // The durational pattern, or subdivison of the the click track.
-  Subdivision subdivision = Subdivision.quarter;
-  // Modulates audio playback, contains sample and beat frequency.
-
-  Meter();
-  Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute,
-    this.subdivision);
-}
-
-// Standard meter, will not have many additional properties
-// or functionality over superclass.
-class MetronomeMeter extends Meter {}
-
-// Polyrhythm sequence which will have two agonist beats
-// over the same subdivision.
-class MetronomePolyrhythm extends Meter {
-  int numBeats2 = 3;
-}
-
-// Polymeter arrangement containing two meters with varying
-// number of beats over the same duration.
-class MetronomePolymeter extends Meter {
-  int numBeats2 = 4;
-  int beatsPerMinute2 = 100;
-}
-
-// Widget for visualizing the beats.
-class MetronomeVisualizer extends StatefulWidget {
-  const MetronomeVisualizer({ Key? key, required this.meter,
-    this.animationDuration = const Duration(milliseconds: 1666) }) :
-      super(key: key);
-
-  final Meter meter;
-  final Duration animationDuration;
-
-  @override
-  State<MetronomeVisualizer> createState() => _MetronomeVisualizerState();
-}
-
-// State of metronome component widgets.
-class _MetronomeVisualizerState extends State<MetronomeVisualizer>
-    with TickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this, // TickerProviderStateMixin
-      duration: widget.animationDuration,
-    );
-  }
-
-  @override
-  void didUpdateWidget(MetronomeVisualizer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _controller.duration = widget.animationDuration;
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      child: Container(
-        // width: 136.0,
-        // height: 86.0,
-        decoration: BoxDecoration(
-          color: const Color(0xCC202020),
-          borderRadius: BorderRadius.circular(2)
-        ),
-        child: const Center(
-          child: Text('Whee!'),
-        ),
-      ),
-      builder: (BuildContext context, Widget? child) {
-        return Transform.translate(
-          offset: const Offset(10.0, 0.0),
-          child: child,
-        );
-      },
-    );
-  }
-}
-
-// Widget for controlling metronome properties, audio playback, and visualization.
-class MetronomeComponent extends StatefulWidget {
-  const MetronomeComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
+class MeterComponent extends StatefulWidget {
+  const MeterComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
 
   final MetronomeMeter meter;
   final ClickTrack clickTrack;
 
   @override
-  State<MetronomeComponent> createState() => _MetronomeComponentState();
+  State<MeterComponent> createState() => _MeterComponentState();
 }
 
-// State of metronome component widgets.
-class _MetronomeComponentState extends State<MetronomeComponent> {
+class _MeterComponentState extends State<MeterComponent> {
   @override
   void initState() {
     super.initState();
   }
 
   @override
-  void didUpdateWidget(MetronomeComponent oldWidget) {
+  void didUpdateWidget(MeterComponent oldWidget) {
     super.didUpdateWidget(oldWidget);
   }
 
@@ -351,7 +53,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Time signature:"),
+      title: const Text('Time signature:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
@@ -375,7 +77,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Beats per minute:"),
+      title: const Text('Beats per minute:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
@@ -401,7 +103,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Durational pattern:"),
+      title: const Text('Durational pattern:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           String s = picker.getSelectedValues()[0];
@@ -589,7 +291,7 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                         onPressed: () => showDialog<String>(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: const Text("Delete or reset meter?"),
+                            title: const Text('Delete or reset meter?'),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () => Navigator.pop(context, 'CANCEL'),
@@ -616,9 +318,9 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
                                 onPressed: () {
                                   Navigator.pop(context, 'DELETE');
                                   if (mounted) {
-                                    print("mounted");
+                                    debugPrint('mounted');
                                   } else {
-                                    print("unmounted");
+                                    debugPrint('unmounted');
                                   }
                                   dispose();
                                 },
@@ -654,38 +356,6 @@ class _MetronomeComponentState extends State<MetronomeComponent> {
         ),
       ),
     );
-  }
-}
-
-String convertSignature(int i) {
-  if (i >= 100) {
-    debugPrint('cannot handle signature of $i (>100)');
-    return "";
-  }
-  int div = i ~/ 10;
-  if (div > 0) {
-    int tens = 0xE080 + div;
-    int ones = 0xE080 + (i % 10);
-    return String.fromCharCodes([tens, ones]);
-  }
-  return String.fromCharCode(0xE080 + i);
-}
-
-String convertSubdivison(Subdivision s) {
-  switch (s) {
-    case Subdivision.quarter:
-      return String.fromCharCodes([0xE1F0]);
-    case Subdivision.eighth:
-      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2]);
-    case Subdivision.triplet:
-      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2,
-        0xE1FF, 0xE1F7, 0xE1F2]);
-    case Subdivision.sixteenth:
-      return String.fromCharCodes([0xE1F0, 0xE1F7, 0xE1F2,
-        0xE1F7, 0xE1F2, 0xE1F7, 0xE1F2]);
-    default:
-      debugPrint('unknown subdivison value: $s');
-      return "";
   }
 }
 
@@ -734,7 +404,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("First rhythm:"),
+      title: const Text('First rhythm:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
@@ -763,7 +433,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
         hideHeader: true,
         cancelText: 'CANCEL',
         confirmText: 'CONFIRM',
-        title: const Text("Second rhythm:"),
+        title: const Text('Second rhythm:'),
         onConfirm: (Picker picker, List value) {
           setState(() {
             widget.meter.numBeats2 = picker.getSelectedValues()[0];
@@ -786,7 +456,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Beats per minute:"),
+      title: const Text('Beats per minute:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
@@ -961,7 +631,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                       onPressed: () => showDialog<String>(
                         context: context,
                         builder: (BuildContext context) => AlertDialog(
-                          title: const Text("Delete or reset meter?"),
+                          title: const Text('Delete or reset meter?'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () => Navigator.pop(context, 'CANCEL'),
@@ -988,9 +658,9 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                               onPressed: () {
                                 Navigator.pop(context, 'DELETE');
                                 if (mounted) {
-                                  print("mounted");
+                                  debugPrint('mounted');
                                 } else {
-                                  print("unmounted");
+                                  debugPrint('unmounted');
                                 }
                                 dispose();
                               },
@@ -1079,7 +749,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Time signature:"),
+      title: const Text('Time signature:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
@@ -1099,7 +769,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
             end: 63
         ),
         NumberPickerColumn(
-          initValue: widget.meter.beatDuration,
+          initValue: widget.meter.beatDuration2,
           items: [
             2, 4, 8, 16, 32
           ],
@@ -1115,11 +785,11 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
       hideHeader: true,
       cancelText: 'CANCEL',
       confirmText: 'CONFIRM',
-      title: const Text("Time signature:"),
+      title: const Text('Time signature:'),
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.numBeats2 = picker.getSelectedValues()[0];
-          widget.meter.beatDuration = picker.getSelectedValues()[1];
+          widget.meter.beatDuration2 = picker.getSelectedValues()[1];
           widget.clickTrack.updateMeter(widget.meter);
         });
       }
@@ -1139,7 +809,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         hideHeader: true,
         cancelText: 'CANCEL',
         confirmText: 'CONFIRM',
-        title: const Text("Beats per minute:"),
+        title: const Text('Beats per minute:'),
         onConfirm: (Picker picker, List value) {
           setState(() {
             widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
@@ -1254,7 +924,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                                   TextSpan(text:
                                   '${convertSignature(widget.meter.numBeats2)}\n'),
                                   TextSpan(text:
-                                  convertSignature(widget.meter.beatDuration)),
+                                  convertSignature(widget.meter.beatDuration2)),
                                 ],
                                 style: const TextStyle(
                                   height: 0.55,
@@ -1313,7 +983,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                         onPressed: () => showDialog<String>(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: const Text("Delete or reset meter?"),
+                            title: const Text('Delete or reset meter?'),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () => Navigator.pop(context, 'CANCEL'),
@@ -1340,9 +1010,9 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                                 onPressed: () {
                                   Navigator.pop(context, 'DELETE');
                                   if (mounted) {
-                                    print("mounted");
+                                    debugPrint('mounted');
                                   } else {
-                                    print("unmounted");
+                                    debugPrint('unmounted');
                                   }
                                   dispose();
                                 },
@@ -1380,4 +1050,3 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
     );
   }
 }
-
