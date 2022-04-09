@@ -61,13 +61,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ));
             break;
           case ComponentType.polyrhythm:
-            components.add(MetronomeComponent(
+            components.add(PolyrhythmComponent(
               meter: MetronomePolyrhythm(),
               clickTrack: ClickTrack(),
             ));
             break;
           case ComponentType.polymeter:
-            components.add(MetronomeComponent(
+            components.add(PolymeterComponent(
               meter: MetronomePolymeter(),
               clickTrack: ClickTrack(),
             ));
