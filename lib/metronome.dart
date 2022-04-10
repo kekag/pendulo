@@ -1,9 +1,10 @@
-import 'package:pendulo/data.dart';
+import 'package:pendulo/meter.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/material.dart';
 
 class MeterComponent extends StatefulWidget {
-  const MeterComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
+  const MeterComponent({ Key? key, required this.meter,
+    required this.clickTrack }) : super(key: key);
 
   final MetronomeMeter meter;
   final ClickTrack clickTrack;
@@ -231,7 +232,7 @@ class _MeterComponentState extends State<MeterComponent> {
                               TextSpan(
                                 children: <TextSpan>[
                                   TextSpan(text: '\n\uE1D5\t=  '
-                                    '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
+                                  '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
                                 ],
                                 style: const TextStyle(
                                   height: 0.175,
@@ -331,7 +332,7 @@ class _MeterComponentState extends State<MeterComponent> {
                         ),
                         backgroundColor: const Color(0xFF333333),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(2)
+                          borderRadius: BorderRadius.circular(2),
                         ),
                         child: const Icon(
                           Icons.close,
@@ -349,7 +350,7 @@ class _MeterComponentState extends State<MeterComponent> {
               height: 16,
               decoration: BoxDecoration(
                 color: barColor,
-                borderRadius: BorderRadius.circular(2)
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ],
@@ -360,7 +361,8 @@ class _MeterComponentState extends State<MeterComponent> {
 }
 
 class PolyrhythmComponent extends StatefulWidget {
-  const PolyrhythmComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
+  const PolyrhythmComponent({ Key? key, required this.meter,
+    required this.clickTrack }) : super(key: key);
 
   final MetronomePolyrhythm meter;
   final ClickTrack clickTrack;
@@ -418,9 +420,9 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
     Picker(
         adapter: NumberPickerAdapter(data: [
           NumberPickerColumn(
-              initValue: widget.meter.numBeats,
-              begin: 2,
-              end: 32
+            initValue: widget.meter.numBeats,
+            begin: 2,
+            end: 32
           ),
         ]),
         delimiter: [
@@ -480,8 +482,8 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
             Container(
               height: 82,
               decoration: BoxDecoration(
-                  color: const Color(0xCC555555),
-                  borderRadius: BorderRadius.circular(2)
+                color: const Color(0xCC555555),
+                borderRadius: BorderRadius.circular(2)
               ),
               child: Row(
                 children: [
@@ -504,7 +506,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                       },
                       backgroundColor: buttonColor,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(2)
+                        borderRadius: BorderRadius.circular(2)
                       ),
                       child: Icon(
                         buttonIcon,
@@ -528,8 +530,8 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2)
                             ),
                             child: Text.rich(
                               TextSpan(
@@ -567,8 +569,8 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text.rich(
                               TextSpan(
@@ -600,14 +602,14 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text.rich(
                               TextSpan(
                                 children: <TextSpan>[
                                   TextSpan(text: '\n\uE1D5\t=  '
-                                      '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
+                                  '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
                                 ],
                                 style: const TextStyle(
                                   height: 0.175,
@@ -671,7 +673,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                       ),
                       backgroundColor: const Color(0xFF333333),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(2)
+                        borderRadius: BorderRadius.circular(2),
                       ),
                       child: const Icon(
                         Icons.close,
@@ -687,8 +689,8 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
               width: MediaQuery.of(context).size.width,
               height: 16,
               decoration: BoxDecoration(
-                  color: barColor,
-                  borderRadius: BorderRadius.circular(2)
+                color: barColor,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ],
@@ -699,7 +701,8 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
 }
 
 class PolymeterComponent extends StatefulWidget {
-  const PolymeterComponent({ Key? key, required this.meter, required this.clickTrack }) : super(key: key);
+  const PolymeterComponent({ Key? key, required this.meter,
+    required this.clickTrack }) : super(key: key);
 
   final MetronomePolymeter meter;
   final ClickTrack clickTrack;
@@ -728,9 +731,9 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
     Picker(
       adapter: NumberPickerAdapter(data: [
         NumberPickerColumn(
-            initValue: widget.meter.numBeats,
-            begin: 2,
-            end: 63
+          initValue: widget.meter.numBeats,
+          begin: 2,
+          end: 63,
         ),
         NumberPickerColumn(
           initValue: widget.meter.beatDuration,
@@ -764,9 +767,9 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
     Picker(
       adapter: NumberPickerAdapter(data: [
         NumberPickerColumn(
-            initValue: widget.meter.numBeats2,
-            begin: 2,
-            end: 63
+          initValue: widget.meter.numBeats2,
+          begin: 2,
+          end: 63,
         ),
         NumberPickerColumn(
           initValue: widget.meter.beatDuration2,
@@ -800,10 +803,10 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
     Picker(
         adapter: NumberPickerAdapter(data: [
           NumberPickerColumn(
-              initValue: widget.meter.beatsPerMinute,
-              jump: 5,
-              begin: 30,
-              end: 300
+            initValue: widget.meter.beatsPerMinute,
+            jump: 5,
+            begin: 30,
+            end: 300,
           ),
         ]),
         hideHeader: true,
@@ -833,8 +836,8 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
             Container(
               height: 82,
               decoration: BoxDecoration(
-                  color: const Color(0xCC555555),
-                  borderRadius: BorderRadius.circular(2)
+                color: const Color(0xCC555555),
+                borderRadius: BorderRadius.circular(2),
               ),
               child: Row(
                 children: [
@@ -857,7 +860,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                       },
                       backgroundColor: buttonColor,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(2)
+                        borderRadius: BorderRadius.circular(2),
                       ),
                       child: Icon(
                         buttonIcon,
@@ -881,8 +884,8 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text.rich(
                               TextSpan(
@@ -915,8 +918,8 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text.rich(
                               TextSpan(
@@ -950,14 +953,14 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                           child: Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                                color: const Color(0xCC333333),
-                                borderRadius: BorderRadius.circular(2)
+                              color: const Color(0xCC333333),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text.rich(
                               TextSpan(
                                 children: <TextSpan>[
                                   TextSpan(text: '\n\uE1D5\t=  '
-                                      '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
+                                  '${widget.meter.beatsPerMinute.toStringAsFixed(0)}'),
                                 ],
                                 style: const TextStyle(
                                   height: 0.175,
@@ -1023,7 +1026,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                         ),
                         backgroundColor: const Color(0xFF333333),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(2)
+                          borderRadius: BorderRadius.circular(2),
                         ),
                         child: const Icon(
                           Icons.close,
@@ -1040,8 +1043,8 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
               width: MediaQuery.of(context).size.width,
               height: 16,
               decoration: BoxDecoration(
-                  color: barColor,
-                  borderRadius: BorderRadius.circular(2)
+                color: barColor,
+                borderRadius: BorderRadius.circular(2)
               ),
             ),
           ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soundpool/soundpool.dart';
-import 'package:pendulo/data.dart';
+import 'package:pendulo/meter.dart';
 import 'package:pendulo/metronome.dart';
 
 void main() {
@@ -104,15 +104,17 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           const Padding(padding: EdgeInsets.all(8)),
         ] + components,
-        /*children: <Widget>[
-          const Padding(padding: EdgeInsets.all(5)),
-          Expanded(
-            child: ListView(
-              // padding: const EdgeInsets.all(5),
-              children: components,
-            )
-          )
-        ],*/
+        /*
+         * children: <Widget>[
+         *   const Padding(padding: EdgeInsets.all(5)),
+         *   Expanded(
+         *     child: ListView(
+         *       // padding: const EdgeInsets.all(5),
+         *       children: components,
+         *     )
+         *   )
+         * ],
+         */
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Stack(
@@ -132,13 +134,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Adds a regular meter click-track to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(2)
+                  borderRadius: BorderRadius.circular(2),
                 ),
                 child: Column(
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text('METER', style: TextStyle(color: Colors.white),),
+                    Text('METER', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -156,13 +158,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Adds a polyrhythm tool to the metronome suite.',
                 backgroundColor: const Color(0xcc555555),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(2)
+                  borderRadius: BorderRadius.circular(2),
                 ),
                 child: Column(
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text('POLYRHYTHM', style: TextStyle(color: Colors.white),),
+                    Text('POLYRHYTHM', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -187,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: const [
                     Padding(padding: EdgeInsets.all(1)),
                     Icon(Icons.add, size: 30, color: Colors.white),
-                    Text('POLYMETER', style: TextStyle(color: Colors.white),),
+                    Text('POLYMETER', style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),

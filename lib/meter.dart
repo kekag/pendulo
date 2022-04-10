@@ -23,7 +23,8 @@ enum Subdivision {
   sixteenth,
 }
 
-// Controls audio playback of the metronome.
+// Controls audio playback of the metronome, contains sample data
+// and beat frequency.
 class ClickTrack {
   MetronomeState metronomeState = MetronomeState.stopped;
   Meter meter = Meter();
@@ -117,7 +118,6 @@ class Meter {
   int beatsPerMinute = 100;
   // The durational pattern, or subdivison of the the click track.
   Subdivision subdivision = Subdivision.eighth;
-  // Modulates audio playback, contains sample and beat frequency.
 
   Meter();
   Meter.standard(this.numBeats, this.beatDuration, this.beatsPerMinute,
@@ -146,12 +146,14 @@ String convertSignature(int i) {
     debugPrint('cannot handle signature of $i (>100)');
     return '';
   }
+
   int div = i ~/ 10;
   if (div > 0) {
     int tens = 0xE080 + div;
     int ones = 0xE080 + (i % 10);
     return String.fromCharCodes([tens, ones]);
   }
+
   return String.fromCharCode(0xE080 + i);
 }
 
