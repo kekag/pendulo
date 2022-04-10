@@ -48,3 +48,6 @@ app.*.map.json
 # Ignore not-yet-supported platforms
 ios/
 linux/
+
+# Eh tests
+test/
