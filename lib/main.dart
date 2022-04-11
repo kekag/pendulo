@@ -45,7 +45,6 @@ class _MyHomePageState extends State<MyHomePage> {
   var components = <Widget>[
     MeterComponent(
       meter: MetronomeMeter(),
-      clickTrack: ClickTrack(),
     ),
   ];
 
@@ -56,19 +55,16 @@ class _MyHomePageState extends State<MyHomePage> {
           case ComponentType.meter:
             components.add(MeterComponent(
               meter: MetronomeMeter(),
-              clickTrack: ClickTrack(),
             ));
             break;
           case ComponentType.polyrhythm:
             components.add(PolyrhythmComponent(
               meter: MetronomePolyrhythm(),
-              clickTrack: ClickTrack(),
             ));
             break;
           case ComponentType.polymeter:
             components.add(PolymeterComponent(
               meter: MetronomePolymeter(),
-              clickTrack: ClickTrack(),
             ));
             break;
           default:

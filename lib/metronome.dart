@@ -3,11 +3,9 @@ import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/material.dart';
 
 class MeterComponent extends StatefulWidget {
-  const MeterComponent({ Key? key, required this.meter,
-    required this.clickTrack }) : super(key: key);
+  const MeterComponent({ Key? key, required this.meter }) : super(key: key);
 
   final MetronomeMeter meter;
-  final ClickTrack clickTrack;
 
   @override
   State<MeterComponent> createState() => _MeterComponentState();
@@ -59,7 +57,6 @@ class _MeterComponentState extends State<MeterComponent> {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
           widget.meter.beatDuration = picker.getSelectedValues()[1];
-          widget.clickTrack.updateMeter(widget.meter);
         });
       }
     ).showDialog(context);
@@ -82,13 +79,13 @@ class _MeterComponentState extends State<MeterComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
-          widget.clickTrack.updateMeter(widget.meter);
         });
       }
     ).showDialog(context);
   }
 
   subdivisionPicker(BuildContext context) {
+    // widget.clickTrack = null;
     Picker(
       selecteds: <int>[
         widget.meter.subdivision.index,
@@ -122,13 +119,12 @@ class _MeterComponentState extends State<MeterComponent> {
               widget.meter.subdivision = Subdivision.sixteenth;
               break;
           }
-          widget.clickTrack.updateMeter(widget.meter);
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
   }
 
-  Color barColor = const Color(0xCC222222);
   IconData buttonIcon = Icons.play_arrow;
   Color buttonColor = const Color(0xDD28ED74);
 
@@ -153,14 +149,14 @@ class _MeterComponentState extends State<MeterComponent> {
                     child: FloatingActionButton(
                       onPressed: () async {
                         setState(() {
-                          if (widget.clickTrack.metronomeState == MetronomeState.stopped) {
+                          if (widget.meter.metronomeState == MetronomeState.stopped) {
                             buttonIcon = Icons.pause;
                             buttonColor = const Color(0xDDF0BE1A);
-                            widget.clickTrack.metronomeState = MetronomeState.playing;
-                          } else if (widget.clickTrack.metronomeState == MetronomeState.playing) {
+                            widget.meter.metronomeState = MetronomeState.playing;
+                          } else if (widget.meter.metronomeState == MetronomeState.playing) {
                             buttonIcon = Icons.play_arrow;
                             buttonColor = const Color(0xDD28ED74);
-                            widget.clickTrack.metronomeState = MetronomeState.stopped;
+                            widget.meter.metronomeState = MetronomeState.stopped;
                           }
                         });
                       },
@@ -217,7 +213,7 @@ class _MeterComponentState extends State<MeterComponent> {
                       GestureDetector(
                         onTap: () {
                           tempoPicker(context);
-                          widget.clickTrack.updateMeter(widget.meter);
+                          widget.meter.updateMeter();
                         },
                         child: SizedBox(
                           width: 86,
@@ -250,7 +246,7 @@ class _MeterComponentState extends State<MeterComponent> {
                       GestureDetector(
                         onTap: () {
                           subdivisionPicker(context);
-                          widget.clickTrack.updateMeter(widget.meter);
+                          widget.meter.updateMeter();
                         },
                         child: SizedBox(
                           width: 78,
@@ -306,11 +302,10 @@ class _MeterComponentState extends State<MeterComponent> {
                                     widget.meter.beatDuration = 4;
                                     widget.meter.beatsPerMinute = 100;
                                     widget.meter.subdivision = Subdivision.quarter;
-                                    widget.clickTrack.metronomeState = MetronomeState.stopped;
-                                    widget.clickTrack.meter = widget.meter;
+                                    widget.meter.metronomeState = MetronomeState.stopped;
                                     buttonIcon = Icons.play_arrow;
                                     buttonColor = const Color(0xDD28ED74);
-                                    widget.clickTrack.metronomeState = MetronomeState.stopped;
+                                    widget.meter.metronomeState = MetronomeState.stopped;
                                   });
                                 },
                                 child: const Text('RESET'),
@@ -349,7 +344,7 @@ class _MeterComponentState extends State<MeterComponent> {
               width: MediaQuery.of(context).size.width,
               height: 16,
               decoration: BoxDecoration(
-                color: barColor,
+                color: widget.meter.barColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -361,11 +356,9 @@ class _MeterComponentState extends State<MeterComponent> {
 }
 
 class PolyrhythmComponent extends StatefulWidget {
-  const PolyrhythmComponent({ Key? key, required this.meter,
-    required this.clickTrack }) : super(key: key);
+  const PolyrhythmComponent({ Key? key, required this.meter }) : super(key: key);
 
   final MetronomePolyrhythm meter;
-  final ClickTrack clickTrack;
 
   @override
   State<PolyrhythmComponent> createState() => _PolyrhythmComponentState();
@@ -410,7 +403,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
-          widget.clickTrack.updateMeter(widget.meter);
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
@@ -439,7 +432,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
         onConfirm: (Picker picker, List value) {
           setState(() {
             widget.meter.numBeats2 = picker.getSelectedValues()[0];
-            widget.clickTrack.updateMeter(widget.meter);
+            widget.meter.updateMeter();
           });
         }
     ).showDialog(context);
@@ -462,7 +455,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
-          widget.clickTrack.updateMeter(widget.meter);
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
@@ -493,14 +486,14 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                     child: FloatingActionButton(
                       onPressed: () async {
                         setState(() {
-                          if (widget.clickTrack.metronomeState == MetronomeState.stopped) {
+                          if (widget.meter.metronomeState == MetronomeState.stopped) {
                             buttonIcon = Icons.pause;
                             buttonColor = const Color(0xDDF0BE1A);
-                            widget.clickTrack.metronomeState = MetronomeState.playing;
-                          } else if (widget.clickTrack.metronomeState == MetronomeState.playing) {
+                            widget.meter.metronomeState = MetronomeState.playing;
+                          } else if (widget.meter.metronomeState == MetronomeState.playing) {
                             buttonIcon = Icons.play_arrow;
                             buttonColor = const Color(0xDD28ED74);
-                            widget.clickTrack.metronomeState = MetronomeState.stopped;
+                            widget.meter.metronomeState = MetronomeState.stopped;
                           }
                         });
                       },
@@ -594,7 +587,7 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                       GestureDetector(
                         onTap: () {
                           tempoPicker(context);
-                          widget.clickTrack.updateMeter(widget.meter);
+                          widget.meter.updateMeter();
                         },
                         child: SizedBox(
                           width: 86,
@@ -647,11 +640,10 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
                                   widget.meter.beatDuration = 4;
                                   widget.meter.beatsPerMinute = 100;
                                   widget.meter.subdivision = Subdivision.quarter;
-                                  widget.clickTrack.metronomeState = MetronomeState.stopped;
-                                  widget.clickTrack.meter = widget.meter;
+                                  widget.meter.metronomeState = MetronomeState.stopped;
                                   buttonIcon = Icons.play_arrow;
                                   buttonColor = const Color(0xDD28ED74);
-                                  widget.clickTrack.metronomeState = MetronomeState.stopped;
+                                  widget.meter.metronomeState = MetronomeState.stopped;
                                 });
                               },
                               child: const Text('RESET'),
@@ -701,11 +693,9 @@ class _PolyrhythmComponentState extends State<PolyrhythmComponent> {
 }
 
 class PolymeterComponent extends StatefulWidget {
-  const PolymeterComponent({ Key? key, required this.meter,
-    required this.clickTrack }) : super(key: key);
+  const PolymeterComponent({ Key? key, required this.meter }) : super(key: key);
 
   final MetronomePolymeter meter;
-  final ClickTrack clickTrack;
 
   @override
   State<PolymeterComponent> createState() => _PolymeterComponentState();
@@ -757,7 +747,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
           widget.meter.beatDuration = picker.getSelectedValues()[1];
-          widget.clickTrack.updateMeter(widget.meter);
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
@@ -793,7 +783,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         setState(() {
           widget.meter.numBeats2 = picker.getSelectedValues()[0];
           widget.meter.beatDuration2 = picker.getSelectedValues()[1];
-          widget.clickTrack.updateMeter(widget.meter);
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
@@ -816,7 +806,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         onConfirm: (Picker picker, List value) {
           setState(() {
             widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
-            widget.clickTrack.updateMeter(widget.meter);
+            widget.meter.updateMeter();
           });
         }
     ).showDialog(context);
@@ -847,14 +837,14 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                     child: FloatingActionButton(
                       onPressed: () async {
                         setState(() {
-                          if (widget.clickTrack.metronomeState == MetronomeState.stopped) {
+                          if (widget.meter.metronomeState == MetronomeState.stopped) {
                             buttonIcon = Icons.pause;
                             buttonColor = const Color(0xDDF0BE1A);
-                            widget.clickTrack.metronomeState = MetronomeState.playing;
-                          } else if (widget.clickTrack.metronomeState == MetronomeState.playing) {
+                            widget.meter.metronomeState = MetronomeState.playing;
+                          } else if (widget.meter.metronomeState == MetronomeState.playing) {
                             buttonIcon = Icons.play_arrow;
                             buttonColor = const Color(0xDD28ED74);
-                            widget.clickTrack.metronomeState = MetronomeState.stopped;
+                            widget.meter.metronomeState = MetronomeState.stopped;
                           }
                         });
                       },
@@ -945,7 +935,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                       GestureDetector(
                         onTap: () {
                           tempoPicker(context);
-                          widget.clickTrack.updateMeter(widget.meter);
+                          widget.meter.updateMeter();
                         },
                         child: SizedBox(
                           width: 86,
@@ -1000,11 +990,10 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
                                     widget.meter.beatDuration = 4;
                                     widget.meter.beatsPerMinute = 100;
                                     widget.meter.subdivision = Subdivision.quarter;
-                                    widget.clickTrack.metronomeState = MetronomeState.stopped;
-                                    widget.clickTrack.meter = widget.meter;
+                                    widget.meter.metronomeState = MetronomeState.stopped;
                                     buttonIcon = Icons.play_arrow;
                                     buttonColor = const Color(0xDD28ED74);
-                                    widget.clickTrack.metronomeState = MetronomeState.stopped;
+                                    widget.meter.metronomeState = MetronomeState.stopped;
                                   });
                                 },
                                 child: const Text('RESET'),
