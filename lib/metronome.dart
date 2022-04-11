@@ -281,64 +281,57 @@ class _MeterComponentState extends State<MeterComponent> {
                     ],
                   ),
                   const Padding(padding: EdgeInsets.all(6.65)),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: 44,
-                      height: 90,
-                      child: FloatingActionButton(
-                        onPressed: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('Delete or reset meter?'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, 'CANCEL'),
-                                child: const Text('CANCEL'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context, 'RESET');
-                                  setState(() {
-                                    widget.meter.numBeats = 4;
-                                    widget.meter.beatDuration = 4;
-                                    widget.meter.beatsPerMinute = 100;
-                                    widget.meter.subdivision = Subdivision.quarter;
-                                    widget.meter.metronomeState = MetronomeState.stopped;
-                                    buttonIcon = Icons.play_arrow;
-                                    buttonColor = const Color(0xDD28ED74);
-                                    widget.meter.metronomeState = MetronomeState.stopped;
-                                  });
-                                },
-                                child: const Text('RESET'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context, 'DELETE');
-                                  if (mounted) {
-                                    debugPrint('mounted');
-                                  } else {
-                                    debugPrint('unmounted');
-                                  }
-                                  dispose();
-                                },
-                                child: const Text('DELETE'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        backgroundColor: const Color(0xFF333333),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          size: 40,
-                          color: Color(0xDDEE2222),
+                  SizedBox(
+                    width: 44,
+                    height: 90,
+                    child: FloatingActionButton(
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('Delete or reset meter?'),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'CANCEL'),
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context, 'RESET');
+                                setState(() {
+                                  widget.meter.numBeats = 4;
+                                  widget.meter.beatDuration = 4;
+                                  widget.meter.beatsPerMinute = 100;
+                                  widget.meter.subdivision = Subdivision.quarter;
+                                  widget.meter.metronomeState = MetronomeState.stopped;
+                                  buttonIcon = Icons.play_arrow;
+                                  buttonColor = const Color(0xDD28ED74);
+                                  widget.meter.metronomeState = MetronomeState.stopped;
+                                });
+                              },
+                              child: const Text('RESET'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context, 'DELETE');
+                                debugPrint('mounted: $mounted');
+                                setState(() {});
+                              },
+                              child: const Text('DELETE'),
+                            ),
+                          ],
                         ),
                       ),
+                      backgroundColor: const Color(0xFF333333),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 40,
+                        color: Color(0xDDEE2222),
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

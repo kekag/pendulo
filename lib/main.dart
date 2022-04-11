@@ -75,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  deleteComponent() {
+  removeComponent() {
     setState(() {});
   }
 
@@ -100,17 +100,6 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           const Padding(padding: EdgeInsets.all(8)),
         ] + components,
-        /*
-         * children: <Widget>[
-         *   const Padding(padding: EdgeInsets.all(5)),
-         *   Expanded(
-         *     child: ListView(
-         *       // padding: const EdgeInsets.all(5),
-         *       children: components,
-         *     )
-         *   )
-         * ],
-         */
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Stack(

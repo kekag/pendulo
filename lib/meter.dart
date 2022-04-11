@@ -34,7 +34,7 @@ class Metronome {
   // Tempo of the time signature.
   int beatsPerMinute = 100;
   // The durational pattern, or subdivison of the the click track.
-  Subdivision subdivision = Subdivision.eighth;
+  Subdivision subdivision = Subdivision.quarter;
 
   MetronomeState metronomeState = MetronomeState.stopped;
   int beat = 1; // 1 <= x <= numBeats * subdivision
@@ -86,7 +86,6 @@ class Metronome {
 
   void _onBeat(Timer t) async {
     switch (metronomeState) {
-      case MetronomeState.starting:
       case MetronomeState.playing:
         if (beat == 1) {
           int _ = await _pool.play(_downbeatId);
@@ -116,6 +115,7 @@ class Metronome {
   void _clearBeat(Timer t) async {
     barColor = const Color(0xCC222222);
   }
+
   Metronome() {
     _calcTickInterval();
     _calcTimers();
@@ -131,6 +131,47 @@ class MetronomeMeter extends Metronome {}
 // over the same subdivision.
 class MetronomePolyrhythm extends Metronome {
   int numBeats2 = 3;
+  Timer? beatTimer2;
+  int _tickInterval2 = 12;
+
+  @override
+  void updateMeter() {
+    beatTimer?.cancel();
+    beatTimer2?.cancel();
+    visTimer?.cancel();
+    _calcTickInterval();
+    _calcTimers();
+  }
+
+  @override
+  void _calcTickInterval() {
+    double bps = beatsPerMinute / 60;
+    _tickInterval = 1000 ~/ bps;
+    double ratio = numBeats / numBeats2;
+    double bps2 = (beatsPerMinute * ratio) / 60;
+    _tickInterval2 = 1000 ~/ bps2;
+  }
+
+  @override
+  void _calcTimers() {
+    beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
+    beatTimer2 = Timer.periodic(Duration(milliseconds: _tickInterval2), _onBeat);
+    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
+  }
+
+  @override
+  void _onBeat(Timer t) async {
+    switch (metronomeState) {
+      case MetronomeState.playing:
+        int _ = await _pool.play(_beatId);
+        barColor = const Color(0xCCFFFFFF);
+        break;
+      case MetronomeState.stopping:
+        beatTimer?.cancel();
+        metronomeState = MetronomeState.stopped;
+        break;
+    }
+  }
 }
 
 // Polymeter arrangement containing two meters with varying
