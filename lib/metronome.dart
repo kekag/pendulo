@@ -57,6 +57,7 @@ class _MeterComponentState extends State<MeterComponent> {
         setState(() {
           widget.meter.numBeats = picker.getSelectedValues()[0];
           widget.meter.beatDuration = picker.getSelectedValues()[1];
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);
@@ -79,6 +80,7 @@ class _MeterComponentState extends State<MeterComponent> {
       onConfirm: (Picker picker, List value) {
         setState(() {
           widget.meter.beatsPerMinute = picker.getSelectedValues()[0];
+          widget.meter.updateMeter();
         });
       }
     ).showDialog(context);

@@ -55,15 +55,21 @@ class Metronome {
   Color barColor = const Color(0xCC222222);
 
   void updateMeter() {
+    beatTimer?.cancel();
+    visTimer?.cancel();
     _calcTickInterval();
-    beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
-    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
+    _calcTimers();
   }
 
   void _calcTickInterval() {
     double bps = beatsPerMinute / 60;
     double subBps = bps * (subdivision.index + 1);
     _tickInterval = 1000 ~/ subBps;
+  }
+
+  void _calcTimers() {
+    beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
+    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
   }
 
   void _setupSoundIds() async {
@@ -112,8 +118,7 @@ class Metronome {
   }
   Metronome() {
     _calcTickInterval();
-    beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
-    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
+    _calcTimers();
     _setupSoundIds();
   }
 }
