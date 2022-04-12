@@ -3,8 +3,10 @@ import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/material.dart';
 
 class MeterComponent extends StatefulWidget {
-  const MeterComponent({ Key? key, required this.meter }) : super(key: key);
+  const MeterComponent({ Key? key, required this.updateBar,
+    required this.meter }) : super(key: key);
 
+  final Function(Color c) updateBar;
   final MetronomeMeter meter;
 
   @override
@@ -25,6 +27,12 @@ class _MeterComponentState extends State<MeterComponent> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void updateBarColor(Color c) {
+    setState(() {
+      barColor = c;
+    });
   }
 
   timeSignaturePicker(BuildContext context) {
@@ -127,6 +135,7 @@ class _MeterComponentState extends State<MeterComponent> {
     ).showDialog(context);
   }
 
+  Color barColor = const Color(0xDE222222);
   IconData buttonIcon = Icons.play_arrow;
   Color buttonColor = const Color(0xDD28ED74);
 
@@ -339,7 +348,7 @@ class _MeterComponentState extends State<MeterComponent> {
               width: MediaQuery.of(context).size.width,
               height: 16,
               decoration: BoxDecoration(
-                color: widget.meter.barColor,
+                color: barColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

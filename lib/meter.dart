@@ -39,7 +39,6 @@ class Metronome {
   MetronomeState metronomeState = MetronomeState.stopped;
   int beat = 1; // 1 <= x <= numBeats * subdivision
   Timer? beatTimer;
-  Timer? visTimer;
   int _tickInterval = 16;
   final Soundpool _pool = Soundpool.fromOptions(
     options: const SoundpoolOptions(maxStreams: 3),
@@ -52,11 +51,9 @@ class Metronome {
   int _downbeatId = 0;
   int _beatId = 0;
   int _subdivisionId = 0;
-  Color barColor = const Color(0xCC222222);
 
   void updateMeter() {
     beatTimer?.cancel();
-    visTimer?.cancel();
     _calcTickInterval();
     _calcTimers();
   }
@@ -71,7 +68,6 @@ class Metronome {
 
   void _calcTimers() {
     beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
-    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
   }
 
   void _setupSoundIds() async {
@@ -86,38 +82,7 @@ class Metronome {
     });
   }
 
-  void _onBeat(Timer t) async {
-    switch (metronomeState) {
-      case MetronomeState.playing:
-        if (beat == 1) {
-          int _ = await _pool.play(_downbeatId);
-          barColor = Colors.greenAccent;
-        } else if (beat % (subdivision.index + 1) != 1 &&
-            subdivision != Subdivision.quarter) {
-          int _ = await _pool.play(_subdivisionId);
-          barColor = const Color(0xCCBBBBBB);
-        } else {
-          int _ = await _pool.play(_beatId);
-          barColor = const Color(0xCCFFFFFF);
-        }
-
-        if (beat == numBeats * (subdivision.index + 1)) {
-          beat = 1;
-        } else {
-          beat++;
-        }
-        break;
-      case MetronomeState.stopping:
-        beatTimer?.cancel();
-        metronomeState = MetronomeState.stopped;
-        beat = 1;
-        break;
-    }
-  }
-
-  void _clearBeat(Timer t) async {
-    barColor = const Color(0xCC222222);
-  }
+  void _onBeat(Timer t) async {}
 
   Metronome() {
     _calcTickInterval();
@@ -128,21 +93,66 @@ class Metronome {
 
 // Standard meter, will not have many additional properties
 // or functionality over superclass.
-class MetronomeMeter extends Metronome {}
+class MetronomeMeter extends Metronome {
+  final Function(Color c) notifyComponent;
+
+  @override
+  void _onBeat(Timer t) async {
+    switch (metronomeState) {
+      case MetronomeState.playing:
+        if (beat == 1) {
+          int _ = await _pool.play(_downbeatId);
+          notifyComponent(Colors.greenAccent);
+        } else if (beat % (subdivision.index + 1) != 1 &&
+            subdivision != Subdivision.quarter) {
+          int _ = await _pool.play(_subdivisionId);
+          notifyComponent(const Color(0xDEBBBBBB));
+        } else {
+          int _ = await _pool.play(_beatId);
+          notifyComponent(const Color(0xDEFFFFFF));
+        }
+
+        if (beat == numBeats * (subdivision.index + 1)) {
+          beat = 1;
+        } else {
+          beat++;
+        }
+
+        _clearBeat();
+        break;
+      case MetronomeState.stopping:
+        beatTimer?.cancel();
+        metronomeState = MetronomeState.stopped;
+        beat = 1;
+        break;
+    }
+  }
+
+  void _clearBeat() async {
+    Future.delayed(const Duration(milliseconds: 5));
+    notifyComponent(const Color(0xDE222222));
+  }
+
+  MetronomeMeter(this.notifyComponent) {
+    _calcTickInterval();
+    _calcTimers();
+    _setupSoundIds();
+  }
+}
 
 // Polyrhythm sequence which will have two agonist beats
 // over the same subdivision.
 class MetronomePolyrhythm extends Metronome {
+  // final Function(Color c) notifyComponent;
+
   int numBeats2 = 3;
   Timer? beatTimer2;
-  // int beat2 = 1;
   int _tickInterval2 = 12;
 
   @override
   void updateMeter() {
     beatTimer?.cancel();
     beatTimer2?.cancel();
-    visTimer?.cancel();
     _calcTickInterval();
     _calcTimers();
   }
@@ -160,19 +170,13 @@ class MetronomePolyrhythm extends Metronome {
   void _calcTimers() {
     beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
     beatTimer2 = Timer.periodic(Duration(milliseconds: _tickInterval2), _onBeat);
-    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
   }
 
   @override
   void _onBeat(Timer t) async {
     switch (metronomeState) {
       case MetronomeState.playing:
-        // if (beat == 1 && beat2 == 1) {
-        //   int _ = await _pool.play(_downbeatId);
-        //   numBeats > numBeats2 ? beat++ : beat2++;
-        // }
         int _ = await _pool.play(_beatId);
-        barColor = const Color(0xCCFFFFFF);
         break;
       case MetronomeState.stopping:
         beatTimer?.cancel();
@@ -181,6 +185,14 @@ class MetronomePolyrhythm extends Metronome {
         break;
     }
   }
+
+  /*
+  MetronomePolyrhythm(this.notifyComponent) {
+    _calcTickInterval();
+    _calcTimers();
+    _setupSoundIds();
+  }
+   */
 }
 
 // Polymeter arrangement containing two meters with varying
@@ -199,7 +211,6 @@ class MetronomePolymeter extends Metronome {
   @override
   void _calcTimers() {
     beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
-    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
   }
 
   @override
@@ -208,10 +219,8 @@ class MetronomePolymeter extends Metronome {
       case MetronomeState.playing:
         if (beat == 1 || beat2 == 1) {
           int _ = await _pool.play(_downbeatId);
-          barColor = Colors.greenAccent;
         } else {
           int _ = await _pool.play(_beatId);
-          barColor = const Color(0xCCFFFFFF);
         }
 
         if (beat == numBeats) {
