@@ -38,7 +38,7 @@ class _MeterComponentState extends State<MeterComponent> {
         NumberPickerColumn(
           initValue: widget.meter.beatDuration,
           items: [
-            2, 4, 8, 16, 32
+            2, 4, 8, 16
           ],
         ),
       ]),
@@ -723,7 +723,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         NumberPickerColumn(
           initValue: widget.meter.beatDuration,
           items: [
-            2, 4, 8, 16, 32
+            2, 4, 8, 16
           ],
         ),
       ]),
@@ -759,7 +759,7 @@ class _PolymeterComponentState extends State<PolymeterComponent> {
         NumberPickerColumn(
           initValue: widget.meter.beatDuration2,
           items: [
-            2, 4, 8, 16, 32
+            2, 4, 8, 16
           ],
         ),
       ]),

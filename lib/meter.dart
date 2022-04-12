@@ -64,6 +64,8 @@ class Metronome {
   void _calcTickInterval() {
     double bps = beatsPerMinute / 60;
     double subBps = bps * (subdivision.index + 1);
+    double ratio =  beatDuration / subdivisionDuration(subdivision);
+    subBps *= ratio;
     _tickInterval = 1000 ~/ subBps;
   }
 
@@ -90,7 +92,8 @@ class Metronome {
         if (beat == 1) {
           int _ = await _pool.play(_downbeatId);
           barColor = Colors.greenAccent;
-        } else if (beat % (subdivision.index + 1) != 1) {
+        } else if (beat % (subdivision.index + 1) != 1 &&
+            subdivision != Subdivision.quarter) {
           int _ = await _pool.play(_subdivisionId);
           barColor = const Color(0xCCBBBBBB);
         } else {
@@ -132,6 +135,7 @@ class MetronomeMeter extends Metronome {}
 class MetronomePolyrhythm extends Metronome {
   int numBeats2 = 3;
   Timer? beatTimer2;
+  // int beat2 = 1;
   int _tickInterval2 = 12;
 
   @override
@@ -163,11 +167,16 @@ class MetronomePolyrhythm extends Metronome {
   void _onBeat(Timer t) async {
     switch (metronomeState) {
       case MetronomeState.playing:
+        // if (beat == 1 && beat2 == 1) {
+        //   int _ = await _pool.play(_downbeatId);
+        //   numBeats > numBeats2 ? beat++ : beat2++;
+        // }
         int _ = await _pool.play(_beatId);
         barColor = const Color(0xCCFFFFFF);
         break;
       case MetronomeState.stopping:
         beatTimer?.cancel();
+        beatTimer2?.cancel();
         metronomeState = MetronomeState.stopped;
         break;
     }
@@ -179,6 +188,49 @@ class MetronomePolyrhythm extends Metronome {
 class MetronomePolymeter extends Metronome {
   int numBeats2 = 4;
   int beatDuration2 = 4;
+  int beat2 = 1;
+
+  @override
+  void _calcTickInterval() {
+    double bps = beatsPerMinute / 60;
+    _tickInterval = 1000 ~/ bps;
+  }
+
+  @override
+  void _calcTimers() {
+    beatTimer = Timer.periodic(Duration(milliseconds: _tickInterval), _onBeat);
+    visTimer = Timer.periodic(Duration(milliseconds: (_tickInterval + 3)), _clearBeat);
+  }
+
+  @override
+  void _onBeat(Timer t) async {
+    switch (metronomeState) {
+      case MetronomeState.playing:
+        if (beat == 1 || beat2 == 1) {
+          int _ = await _pool.play(_downbeatId);
+          barColor = Colors.greenAccent;
+        } else {
+          int _ = await _pool.play(_beatId);
+          barColor = const Color(0xCCFFFFFF);
+        }
+
+        if (beat == numBeats) {
+          beat = 1;
+        } else {
+          beat++;
+        }
+        if (beat2 == numBeats2) {
+          beat2 = 1;
+        } else {
+          beat2++;
+        }
+        break;
+      case MetronomeState.stopping:
+        beatTimer?.cancel();
+        metronomeState = MetronomeState.stopped;
+        break;
+    }
+  }
 }
 
 String convertSignature(int i) {
@@ -212,5 +264,16 @@ String convertSubdivison(Subdivision s) {
     default:
       debugPrint('unknown subdivison value: $s');
       return '';
+  }
+}
+
+int subdivisionDuration(Subdivision s) {
+  switch (s) {
+    case Subdivision.eighth:
+      return 8;
+    case Subdivision.sixteenth:
+      return 16;
+    default:
+      return 4;
   }
 }
