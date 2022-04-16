@@ -3,10 +3,9 @@ import 'package:flutter_picker/flutter_picker.dart';
 import 'package:flutter/material.dart';
 
 class MeterComponent extends StatefulWidget {
-  const MeterComponent({ Key? key, required this.updateBar,
+  const MeterComponent({ Key? key,
     required this.meter }) : super(key: key);
 
-  final Function(Color c) updateBar;
   final MetronomeMeter meter;
 
   @override
@@ -17,6 +16,7 @@ class _MeterComponentState extends State<MeterComponent> {
   @override
   void initState() {
     super.initState();
+    widget.meter.notifyComponent = updateBarColor;
   }
 
   @override
@@ -29,9 +29,10 @@ class _MeterComponentState extends State<MeterComponent> {
     super.dispose();
   }
 
-  void updateBarColor(Color c) {
+  void updateBarColor() {
+    debugPrint('Here');
     setState(() {
-      barColor = c;
+      barColor = widget.meter.barColor;
     });
   }
 

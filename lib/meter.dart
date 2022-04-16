@@ -94,22 +94,27 @@ class Metronome {
 // Standard meter, will not have many additional properties
 // or functionality over superclass.
 class MetronomeMeter extends Metronome {
-  final Function(Color c) notifyComponent;
+  void Function()? notifyComponent;
+  Color barColor = const Color(0xDE222222);
 
   @override
   void _onBeat(Timer t) async {
+    debugPrint('onBeat');
     switch (metronomeState) {
       case MetronomeState.playing:
         if (beat == 1) {
           int _ = await _pool.play(_downbeatId);
-          notifyComponent(Colors.greenAccent);
+          barColor = Colors.greenAccent;
+          notifyComponent!();
         } else if (beat % (subdivision.index + 1) != 1 &&
             subdivision != Subdivision.quarter) {
           int _ = await _pool.play(_subdivisionId);
-          notifyComponent(const Color(0xDEBBBBBB));
+          barColor = const Color(0xDEBBBBBB);
+          notifyComponent!();
         } else {
           int _ = await _pool.play(_beatId);
-          notifyComponent(const Color(0xDEFFFFFF));
+          barColor = const Color(0xDEFFFFFF);
+          notifyComponent!();
         }
 
         if (beat == numBeats * (subdivision.index + 1)) {
@@ -129,11 +134,13 @@ class MetronomeMeter extends Metronome {
   }
 
   void _clearBeat() async {
-    Future.delayed(const Duration(milliseconds: 5));
-    notifyComponent(const Color(0xDE222222));
+    debugPrint('clearBeat');
+    Future.delayed(const Duration(milliseconds: 15));
+    barColor = const Color(0xDE222222);
+    notifyComponent!();
   }
 
-  MetronomeMeter(this.notifyComponent) {
+  MetronomeMeter() {
     _calcTickInterval();
     _calcTimers();
     _setupSoundIds();
