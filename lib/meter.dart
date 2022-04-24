@@ -61,8 +61,6 @@ class Metronome {
   void _calcTickInterval() {
     double bps = beatsPerMinute / 60;
     double subBps = bps * (subdivision.index + 1);
-    double ratio =  beatDuration / subdivisionDuration(subdivision);
-    subBps *= ratio;
     _tickInterval = 1000 ~/ subBps;
   }
 
@@ -187,7 +185,6 @@ class MetronomePolyrhythm extends Metronome {
         break;
       case MetronomeState.stopping:
         beatTimer?.cancel();
-        beatTimer2?.cancel();
         metronomeState = MetronomeState.stopped;
         break;
     }
@@ -280,16 +277,5 @@ String convertSubdivison(Subdivision s) {
     default:
       debugPrint('unknown subdivison value: $s');
       return '';
-  }
-}
-
-int subdivisionDuration(Subdivision s) {
-  switch (s) {
-    case Subdivision.eighth:
-      return 8;
-    case Subdivision.sixteenth:
-      return 16;
-    default:
-      return 4;
   }
 }
